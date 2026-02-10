@@ -4,63 +4,270 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Forex Plan — Growth & Log</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="styles.css" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4/dist/chart.umd.min.js"></script>
+  <!-- <a href="https://www.flaticon.com/free-icons/settings" title="settings icons">Settings icons created by Freepik - Flaticon</a> -->
+  <!-- <a href="https://www.flaticon.com/free-icons/refresh" title="refresh icons">Refresh icons created by Dave Gandy - Flaticon</a> -->
+  <!-- <a href="https://www.flaticon.com/free-animated-icons/trophy" title="trophy animated icons">Trophy animated icons created by Freepik - Flaticon</a> -->
 </head>
 <body>
-  <header>
-    <h1>Forex Plan</h1>
-    <p>Port growth projection & daily trading log</p>
-  </header>
-
-  <main>
-    <section id="projection" class="card">
-      <h2>Port growth projection</h2>
-      <p class="muted">Estimate how many weeks to reach your target earning per day.</p>
-      <form id="projection-form">
-        <div class="grid">
-          <label>Capital ($)<input type="number" name="capital" min="1" step="0.01" value="100" required /></label>
-          <label>Risk % per order<input type="number" name="riskPct" min="0.1" max="100" step="0.1" value="5" required /></label>
-          <label>Target TP (points)<input type="number" name="tpPoints" min="1" value="1000" required /></label>
-          <label>SL (points)<input type="number" name="slPoints" min="1" value="500" required /></label>
-          <label>Max trades per day<input type="number" name="maxTradesPerDay" min="1" value="1" required /></label>
-          <label>Target earning per day ($)<input type="number" name="targetPerDay" min="0.01" step="0.01" value="20" required /></label>
+  <div class="app">
+    <header>
+      <div class="header-row">
+        <div class="logo">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="22 7 13.5 15.5 8.5 10.5 2 17" />
+            <polyline points="16 7 22 7 22 13" />
+          </svg>
+          <h1 class="app-header">Forex Plan</h1>
         </div>
-        <button type="submit">Calculate</button>
-      </form>
-      <div id="projection-result" class="result" hidden>
-        <h3>Result</h3>
-        <p id="projection-summary"></p>
-        <div id="projection-weeks"></div>
+        <div class="settings-wrap">
+          <button type="button" class="btn-icon" id="btn-settings" aria-label="Settings">
+            <img src="assets/setting.png" alt="settings" width="20" height="20" />
+          </button>
+          <div class="dropdown" id="settings-dropdown">
+            <button type="button" class="dropdown-item" id="btn-export">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+              Export Data (JSON)
+            </button>
+            <button type="button" class="dropdown-item" id="btn-import">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+              Import Data (JSON)
+            </button>
+            <button type="button" class="dropdown-item" id="btn-export-csv">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+              Export Trading Log (CSV)
+            </button>
+            <input type="file" id="import-file" accept=".json" hidden />
+          </div>
+        </div>
       </div>
-    </section>
+      <p class="subtitle">Growth projection & trading journal</p>
+    </header>
 
-    <section id="log" class="card">
-      <h2>Daily trading log</h2>
-      <form id="log-form">
-        <div class="row">
-          <label>Win / Loss
-            <select name="outcome" required>
-              <option value="win">Win</option>
-              <option value="loss">Loss</option>
-            </select>
-          </label>
-          <label>Amount ($)<input type="number" name="amount" min="0" step="0.01" required /></label>
-          <label>Points<input type="number" name="points" min="0" step="1" required /></label>
-          <label>Date<input type="date" name="date" required /></label>
+    <nav class="tabs">
+      <button class="tab active" data-tab="projection">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="18" y1="20" x2="18" y2="10" /><line x1="12" y1="20" x2="12" y2="4" /><line x1="6" y1="20" x2="6" y2="14" />
+        </svg>
+        Projection
+      </button>
+      <button class="tab" data-tab="log">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><polyline points="14 2 14 8 20 8" /><line x1="16" y1="13" x2="8" y2="13" /><line x1="16" y1="17" x2="8" y2="17" /><polyline points="10 9 9 9 8 9" />
+        </svg>
+        Trading Log
+      </button>
+    </nav>
+
+    <main>
+      <!-- PROJECTION TAB -->
+      <section id="projection" class="tab-content active">
+        <div class="card">
+          <div class="card-header">
+            <h2>Port Growth Projection</h2>
+            <p class="muted">Estimate how many weeks to reach your daily earning target</p>
+          </div>
+          <form id="projection-form">
+            <fieldset class="form-section">
+              <legend>Initial Setup</legend>
+              <div class="form-grid">
+                <div class="form-group">
+                  <label for="capital">Capital <span class="info-tip" data-tip="Your starting trading balance in USD."><img src="assets/info.png" alt="info" /></span></label>
+                  <div class="input-wrap">
+                    <span class="input-prefix">$</span>
+                    <input type="number" id="capital" name="capital" min="1" step="0.01" value="100" required />
+                  </div>
+                </div>
+                <div class="form-group">
+                  <label for="riskPct">Risk per order <span class="info-tip" data-tip="Max % of capital you're willing to lose on a single trade. e.g. 5% of $100 = $5 risk."><img src="assets/info.png" alt="info" /></span></label>
+                  <div class="input-wrap">
+                    <input type="number" id="riskPct" name="riskPct" min="0.1" max="100" step="0.1" value="5" required />
+                    <span class="input-suffix">%</span>
+                  </div>
+                </div>
+                <div class="form-group">
+                  <label for="winRate">Expected win rate <span class="info-tip" data-tip="% of trades you expect to win. 100% = all wins (optimistic). Use 50–70% for realistic projections."><img src="assets/info.png" alt="info" /></span></label>
+                  <div class="input-wrap">
+                    <input type="number" id="winRate" name="winRate" min="1" max="100" step="1" value="100" required />
+                    <span class="input-suffix">%</span>
+                  </div>
+                </div>
+              </div>
+            </fieldset>
+
+            <fieldset class="form-section">
+              <legend>Daily Plan</legend>
+              <div class="form-grid">
+                <div class="form-group">
+                  <label for="tpPoints">TP points per order <span class="info-tip" data-tip="Take Profit — price points you target per winning trade. e.g. 1000 pts with 0.01 lot = $10 profit."><img src="assets/info.png" alt="info" /></span></label>
+                  <div class="input-wrap">
+                    <input type="number" id="tpPoints" name="tpPoints" min="1" value="1000" required />
+                    <span class="input-suffix">pts</span>
+                  </div>
+                </div>
+                <div class="form-group">
+                  <label for="slPoints">SL points per order <span class="info-tip" data-tip="Stop Loss — price points against you before the trade auto-closes. This limits your loss per trade."><img src="assets/info.png" alt="info" /></span></label>
+                  <div class="input-wrap">
+                    <input type="number" id="slPoints" name="slPoints" min="1" value="500" required />
+                    <span class="input-suffix">pts</span>
+                  </div>
+                </div>
+                <div class="form-group">
+                  <label for="maxTradesPerDay">Max trades / day <span class="info-tip" data-tip="Maximum number of trades you plan to take each day. Projection assumes this many trades every trading day (Mon–Fri)."><img src="assets/info.png" alt="info" /></span></label>
+                  <div class="input-wrap">
+                    <input type="number" id="maxTradesPerDay" name="maxTradesPerDay" min="1" value="1" required />
+                  </div>
+                </div>
+              </div>
+            </fieldset>
+
+            <fieldset class="form-section">
+              <legend>End Goal</legend>
+              <div class="form-grid form-grid-single">
+                <div class="form-group">
+                  <label for="targetPerDay">Target earnings / day <span class="info-tip" data-tip="Your goal — how much $ per day you want to earn. The projection calculates how many weeks until you reach this."><img src="assets/info.png" alt="info" /></span></label>
+                  <div class="input-wrap">
+                    <span class="input-prefix">$</span>
+                    <input type="number" id="targetPerDay" name="targetPerDay" min="0.01" step="0.01" value="20" required />
+                  </div>
+                </div>
+              </div>
+            </fieldset>
+            <button type="submit" class="btn btn-primary">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="22 7 13.5 15.5 8.5 10.5 2 17" /><polyline points="16 7 22 7 22 13" />
+              </svg>
+              Calculate Projection
+            </button>
+          </form>
         </div>
-        <button type="submit">Add log</button>
-      </form>
-      <div id="log-summary" class="summary" hidden></div>
-      <div id="log-vs-projection" class="comparison" hidden></div>
-      <table id="log-table">
-        <thead>
-          <tr><th>Date</th><th>Outcome</th><th>Amount ($)</th><th>Points</th><th></th></tr>
-        </thead>
-        <tbody id="log-tbody"></tbody>
-      </table>
-    </section>
-  </main>
 
+        <div id="projection-result" hidden>
+          <div class="stat-cards" id="projection-stats"></div>
+          <div class="card">
+            <div class="card-header">
+              <h2>Capital Growth <span class="info-tip" data-tip="Projected capital growth week-over-week. Blue line = projection based on your inputs. Green dashed line = actual capital from your trading logs."><img src="assets/info.png" alt="info" /></span></h2>
+              <button type="button" class="btn-icon btn-icon-sm" id="btn-refresh-chart" aria-label="Refresh chart">
+                <img src="assets/refresh-page-option.png" alt="refresh" width="16" height="16" />
+              </button>
+            </div>
+            <div class="chart-wrap">
+              <canvas id="projection-chart"></canvas>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-header">
+              <h2>Weekly Breakdown <span class="info-tip" data-tip="Week-by-week details: starting capital, risk $, max lot size, profit per win, weekly P&L (accounting for win rate), and ending capital. Capital updates each week."><img src="assets/info.png" alt="info" /></span></h2>
+            </div>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Week</th>
+                    <th>Capital</th>
+                    <th>Risk $</th>
+                    <th>Max Lot</th>
+                    <th>$/Win</th>
+                    <th>Week P&L</th>
+                    <th>End Capital</th>
+                  </tr>
+                </thead>
+                <tbody id="projection-tbody"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- LOG TAB -->
+      <section id="log" class="tab-content">
+        <div class="card">
+          <div class="card-header">
+            <h2>Add Trade</h2>
+          </div>
+          <form id="log-form">
+            <div class="form-row">
+              <div class="form-group">
+                <label for="outcome">Result <span class="info-tip" data-tip="Whether you won or lost this trade."><img src="assets/info.png" alt="info" /></span></label>
+                <select id="outcome" name="outcome" required>
+                  <option value="win">Win</option>
+                  <option value="loss">Loss</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label for="amount">Amount <span class="info-tip" data-tip="How much $ you gained (win) or lost (loss) on this trade."><img src="assets/info.png" alt="info" /></span></label>
+                <div class="input-wrap">
+                  <span class="input-prefix">$</span>
+                  <input type="number" id="amount" name="amount" min="0" step="0.01" required />
+                </div>
+              </div>
+              <div class="form-group">
+                <label for="points">TP pts <span class="info-tip" data-tip="Take profit points of this trade."><img src="assets/info.png" alt="info" /></span></label>
+                <div class="input-wrap">
+                  <input type="number" id="points" name="points" min="0" step="1" required />
+                  <span class="input-suffix">pts</span>
+                </div>
+              </div>
+              <div class="form-group">
+                <label for="logSl">SL pts <span class="info-tip" data-tip="Stop Loss points of this trade."><img src="assets/info.png" alt="info" /></span></label>
+                <div class="input-wrap">
+                  <input type="number" id="logSl" name="sl" min="0" step="1" required />
+                  <span class="input-suffix">pts</span>
+                </div>
+              </div>
+              <div class="form-group">
+                <label for="logDate">Date <span class="info-tip" data-tip="When you took this trade. Used to calculate which week you're in for comparison vs projection."><img src="assets/info.png" alt="info" /></span></label>
+                <input type="date" id="logDate" name="date" required />
+              </div>
+              <div class="form-group form-group-btn">
+                <button type="submit" class="btn btn-primary">+ Add</button>
+              </div>
+            </div>
+          </form>
+        </div>
+
+        <div class="week-filter">
+          <button type="button" class="btn-icon btn-icon-sm" id="btn-prev-week" aria-label="Previous week">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+          </button>
+          <span id="week-label" class="week-label"></span>
+          <button type="button" class="btn-icon btn-icon-sm" id="btn-next-week" aria-label="Next week">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+          </button>
+          <button type="button" class="btn btn-filter-toggle" id="btn-all-time">All Time</button>
+        </div>
+
+        <div id="log-cards" class="stat-cards" hidden></div>
+        <div id="log-vs-projection" class="banner" hidden></div>
+
+        <div class="card" id="log-table-card">
+          <div class="card-header">
+            <h2>Trade History</h2>
+            <span class="badge" id="log-count">0</span>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr><th>Date</th><th>Result</th><th>Amount</th><th>Lot</th><th>Points</th><th>SL</th><th></th></tr>
+              </thead>
+              <tbody id="log-tbody"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+    </main>
+
+  </div>
+
+  <script src="js/constants.js"></script>
+  <script src="js/storage.js"></script>
+  <script src="js/projection.js"></script>
+  <script src="js/log.js"></script>
+  <script src="js/data-io.js"></script>
   <script src="app.js"></script>
 </body>
 </html>
