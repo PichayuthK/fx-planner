@@ -9,9 +9,6 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="styles.css" />
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4/dist/chart.umd.min.js"></script>
-  <!-- <a href="https://www.flaticon.com/free-icons/settings" title="settings icons">Settings icons created by Freepik - Flaticon</a> -->
-  <!-- <a href="https://www.flaticon.com/free-icons/refresh" title="refresh icons">Refresh icons created by Dave Gandy - Flaticon</a> -->
-  <!-- <a href="https://www.flaticon.com/free-animated-icons/trophy" title="trophy animated icons">Trophy animated icons created by Freepik - Flaticon</a> -->
 </head>
 <body>
   <div class="app">
@@ -39,7 +36,7 @@
             </button>
             <button type="button" class="dropdown-item" id="btn-export-csv">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
-              Export Trading Log (CSV)
+              Export Trade History (CSV)
             </button>
             <div class="dropdown-divider"></div>
             <button type="button" class="dropdown-item" id="btn-theme">
@@ -65,13 +62,13 @@
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/>
         </svg>
-        Overview
+        This week
       </button>
       <button class="tab" data-tab="log">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><polyline points="14 2 14 8 20 8" /><line x1="16" y1="13" x2="8" y2="13" /><line x1="16" y1="17" x2="8" y2="17" /><polyline points="10 9 9 9 8 9" />
         </svg>
-        Trading Log
+        Trade History
       </button>
       <button class="tab" data-tab="projection">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -86,10 +83,9 @@
       <section id="overview" class="tab-content active">
         <div id="overview-week-label" class="overview-week-heading"></div>
 
-        <div id="weekly-plan" class="weekly-plan-bar" hidden></div>
+        <div id="overview-goals" class="overview-goals-card" hidden></div>
 
-        <div id="overview-stats" class="stat-cards" hidden></div>
-        <div id="overview-vs-projection" class="banner" hidden></div>
+        <div id="overview-widgets" class="stat-cards" hidden></div>
 
         <div class="card">
           <div class="card-header">
@@ -148,7 +144,7 @@
           <div class="table-wrap">
             <table>
               <thead>
-                <tr><th>Date</th><th>Result</th><th>Amount</th><th>Lot</th><th>Points</th><th>SL</th><th>Note</th></tr>
+                <tr><th>Date</th><th>Result</th><th>Amount</th><th>Lot</th><th>Points</th><th>SL</th><th>Note</th><th></th></tr>
               </thead>
               <tbody id="overview-tbody"></tbody>
             </table>
@@ -184,7 +180,7 @@
                   </div>
                 </div>
                 <div class="form-group">
-                  <label for="riskPct">Risk per order <span class="info-tip" data-tip="Max % of capital you're willing to lose on a single trade. e.g. 5% of $100 = $5 risk."><img src="assets/info.png" alt="info" /></span></label>
+                  <label for="riskPct">Risk per trade <span class="info-tip" data-tip="Max % of capital you're willing to lose on a single trade. e.g. 5% of $100 = $5 risk."><img src="assets/info.png" alt="info" /></span></label>
                   <div class="input-wrap">
                     <input type="number" id="riskPct" name="riskPct" min="0.1" max="100" step="0.1" value="5" required />
                     <span class="input-suffix">%</span>
@@ -204,14 +200,14 @@
               <legend>Daily Plan</legend>
               <div class="form-grid">
                 <div class="form-group">
-                  <label for="tpPoints">TP points per order <span class="info-tip" data-tip="Take Profit — price points you target per winning trade. e.g. 1000 pts with 0.01 lot = $10 profit."><img src="assets/info.png" alt="info" /></span></label>
+                  <label for="tpPoints">TP points per trade <span class="info-tip" data-tip="Take Profit — price points you target per winning trade. e.g. 1000 pts with 0.01 lot = $10 profit."><img src="assets/info.png" alt="info" /></span></label>
                   <div class="input-wrap">
                     <input type="number" id="tpPoints" name="tpPoints" min="1" value="1000" required />
                     <span class="input-suffix">pts</span>
                   </div>
                 </div>
                 <div class="form-group">
-                  <label for="slPoints">SL points per order <span class="info-tip" data-tip="Stop Loss — price points against you before the trade auto-closes. This limits your loss per trade."><img src="assets/info.png" alt="info" /></span></label>
+                  <label for="slPoints">SL points per trade <span class="info-tip" data-tip="Stop Loss — price points against you before the trade auto-closes. This limits your loss per trade."><img src="assets/info.png" alt="info" /></span></label>
                   <div class="input-wrap">
                     <input type="number" id="slPoints" name="slPoints" min="1" value="500" required />
                     <span class="input-suffix">pts</span>
@@ -224,6 +220,10 @@
                   </div>
                 </div>
               </div>
+              <p class="total-target-pts-line muted">
+                Total target points <span class="info-tip" data-tip="TP points per order × max trades per day. Total points you aim to capture per day."><img src="assets/info.png" alt="info" /></span>
+                <strong id="total-target-pts-value">1,000</strong> pts/day
+              </p>
             </fieldset>
 
             <fieldset class="form-section">
@@ -270,7 +270,7 @@
           </div>
           <div class="card">
             <div class="card-header">
-              <h2>Weekly Breakdown <span class="info-tip" data-tip="Week-by-week details: starting capital, risk $, max lot size, profit per win, weekly P&L (accounting for win rate), and ending capital. Capital updates each week."><img src="assets/info.png" alt="info" /></span></h2>
+              <h2>Weekly Breakdown <span class="info-tip" data-tip="Week-by-week details: starting capital, risk $, max lot size, profit per win, weekly P&L (uses max trades/day × 5 days and win rate), and ending capital. Capital updates each week."><img src="assets/info.png" alt="info" /></span></h2>
             </div>
             <div class="table-wrap">
               <table>

@@ -40,6 +40,19 @@
 
   ForexPlan.totalFromLogs = totalFromLogs;
 
+  /** Net points: wins add TP points, losses subtract SL points */
+  function netPointsFromLogs(logs) {
+    return logs.reduce(
+      (sum, l) => sum + (l.outcome === "win" ? (l.points || 0) : -(l.sl || 0)),
+      0,
+    );
+  }
+
+  function logsForToday() {
+    const today = new Date().toISOString().slice(0, 10);
+    return getLogs().filter((l) => l.date === today);
+  }
+
   // ─── Log tab filter state ─────────────────────────
 
   let filterMonday = getMonday(new Date());
@@ -380,21 +393,18 @@
   ForexPlan.renderOverview = function () {
     const saved = getSavedProjection();
     const emptyEl = document.getElementById("overview-empty");
-    const planEl = document.getElementById("weekly-plan");
-    const statsEl = document.getElementById("overview-stats");
-    const bannerEl = document.getElementById("overview-vs-projection");
+    const goalsEl = document.getElementById("overview-goals");
+    const widgetsEl = document.getElementById("overview-widgets");
     const tradesCard = document.getElementById("overview-trades-card");
     const weekHeading = document.getElementById("overview-week-label");
 
-    // Current week range
     const thisMonday = getMonday(new Date());
     const thisSunday = getSunday(thisMonday);
     weekHeading.textContent = `${fmt(thisMonday)} – ${fmt(thisSunday)}`;
 
     if (!saved || !saved.result || !saved.result.weeks.length) {
-      planEl.hidden = true;
-      statsEl.hidden = true;
-      bannerEl.hidden = true;
+      goalsEl.hidden = true;
+      widgetsEl.hidden = true;
       tradesCard.hidden = true;
       emptyEl.hidden = false;
       return;
@@ -402,105 +412,55 @@
 
     emptyEl.hidden = true;
 
-    // ── Weekly plan cards ─────────────────────────
-    const { params, result } = saved;
+    const { params } = saved;
     const allLogs = getLogs();
-    const allTimePnl = totalFromLogs(allLogs);
-    const currentCapital = params.capital + allTimePnl;
+    const TRADING_DAYS = ForexPlan.TRADING_DAYS_PER_WEEK || 5;
 
-    let weekData = result.weeks[0];
-    for (let i = 0; i < result.weeks.length; i++) {
-      if (currentCapital >= result.weeks[i].capitalStart) {
-        weekData = result.weeks[i];
-      } else {
-        break;
-      }
-    }
+    const dailyGoalPts = (params.tpPoints || 0) * (params.maxTradesPerDay || 1);
+    const weekGoalPts = dailyGoalPts * TRADING_DAYS;
+    const todayLogs = logsForToday();
+    const thisWeekLogs = logsForWeek(thisMonday);
+    const netPtsToday = netPointsFromLogs(todayLogs);
+    const netPtsWeek = netPointsFromLogs(thisWeekLogs);
+    const todayDone = dailyGoalPts > 0 && netPtsToday >= dailyGoalPts;
+    const weekDone = weekGoalPts > 0 && netPtsWeek >= weekGoalPts;
 
     const f = ForexPlan.fmtN;
-    const wkPnlSign = weekData.weeklyProfit >= 0 ? '+' : '-';
-    planEl.innerHTML = `
-      <div class="plan-bar-header">
-        <span class="plan-bar-title">Week ${weekData.week}</span>
-        <span class="info-tip" data-tip="Week ${weekData.week} plan from your projection. Capital: $${f(currentCapital)}, Risk ${params.riskPct}%, Max Lot ${f(weekData.maxLot)}, at ${params.winRate ?? 100}% win rate."><img src="assets/info.png" alt="info" /></span>
-      </div>
-      <div class="plan-bar-chips">
-        <div class="plan-chip">
-          <span class="plan-chip-label">Capital</span>
-          <span class="plan-chip-value accent">$${f(currentCapital)}</span>
+    goalsEl.innerHTML = `
+      <div class="overview-goals-grid">
+        <div class="overview-goal-block ${todayDone ? "done" : ""}">
+          <div class="overview-goal-label">Today</div>
+          <div class="overview-goal-value">${f(netPtsToday, 0)} / ${f(dailyGoalPts, 0)} pts ${todayDone ? "<span class=\"overview-done-badge\">✓ Done</span>" : ""}</div>
         </div>
-        <div class="plan-divider"></div>
-        <div class="plan-chip">
-          <span class="plan-chip-label">Risk/trade</span>
-          <span class="plan-chip-value">$${f(weekData.riskDollar)}</span>
-        </div>
-        <div class="plan-divider"></div>
-        <div class="plan-chip">
-          <span class="plan-chip-label">Lot/order</span>
-          <span class="plan-chip-value">${f(weekData.maxLot)}</span>
-        </div>
-        <div class="plan-divider"></div>
-        <div class="plan-chip">
-          <span class="plan-chip-label">Daily Target</span>
-          <span class="plan-chip-value green">+$${f(weekData.profitPerWin)}</span>
-        </div>
-        <div class="plan-divider"></div>
-        <div class="plan-chip">
-          <span class="plan-chip-label">Wk Target</span>
-          <span class="plan-chip-value ${weekData.weeklyProfit >= 0 ? 'green' : ''}">${wkPnlSign}$${f(Math.abs(weekData.weeklyProfit))}</span>
+        <div class="overview-goal-block ${weekDone ? "done" : ""}">
+          <div class="overview-goal-label">This week</div>
+          <div class="overview-goal-value">${f(netPtsWeek, 0)} / ${f(weekGoalPts, 0)} pts ${weekDone ? "<span class=\"overview-done-badge\">✓ Done</span>" : ""}</div>
         </div>
       </div>
     `;
-    planEl.hidden = false;
+    goalsEl.hidden = false;
 
-    // ── This week's actual stats ──────────────────
-    const thisWeekLogs = logsForWeek(thisMonday);
+    // ── Current Capital & P&L (this week) ────────
+    const allTimePnl = totalFromLogs(allLogs);
+    const currentCapital = params.capital + allTimePnl;
+    const weekPnl = totalFromLogs(thisWeekLogs);
+    widgetsEl.innerHTML = `
+      <div class="stat">
+        <div class="stat-label">Current Capital <span class="info-tip" data-tip="Initial capital + total P&L from all logged trades."><img src="assets/info.png" alt="info" /></span></div>
+        <div class="stat-value accent">$${f(currentCapital)}</div>
+        <div class="stat-sub">started at $${f(params.capital)}</div>
+      </div>
+      <div class="stat">
+        <div class="stat-label">P&L (this week) <span class="info-tip" data-tip="Sum of trades for this week."><img src="assets/info.png" alt="info" /></span></div>
+        <div class="stat-value ${weekPnl >= 0 ? "green" : ""}" style="${weekPnl < 0 ? "color:var(--red)" : ""}">
+          ${weekPnl >= 0 ? "+" : "-"}$${f(Math.abs(weekPnl))}
+        </div>
+        <div class="stat-sub">${thisWeekLogs.length} trade${thisWeekLogs.length !== 1 ? "s" : ""}</div>
+      </div>
+    `;
+    widgetsEl.hidden = false;
 
     if (thisWeekLogs.length > 0) {
-      const weekPnl = totalFromLogs(thisWeekLogs);
-      const wins = thisWeekLogs.filter((l) => l.outcome === "win").length;
-      const losses = thisWeekLogs.filter((l) => l.outcome === "loss").length;
-      const winRate = ((wins / thisWeekLogs.length) * 100).toFixed(0);
-
-      const progressPct =
-        weekData.weeklyProfit > 0
-          ? Math.min(
-              100,
-              Math.max(0, (weekPnl / weekData.weeklyProfit) * 100),
-            ).toFixed(0)
-          : 0;
-
-      statsEl.innerHTML = `
-        <div class="stat">
-          <div class="stat-label">This Week P&L</div>
-          <div class="stat-value ${weekPnl >= 0 ? "green" : ""}" style="${weekPnl < 0 ? "color:var(--red)" : ""}">
-            ${weekPnl >= 0 ? "+" : "-"}$${f(Math.abs(weekPnl))}
-          </div>
-          <div class="stat-sub">${thisWeekLogs.length} trade${thisWeekLogs.length !== 1 ? "s" : ""}</div>
-        </div>
-        <div class="stat">
-          <div class="stat-label">Win Rate</div>
-          <div class="stat-value">${winRate}%</div>
-          <div class="stat-sub">${wins}W / ${losses}L</div>
-        </div>
-        <div class="stat">
-          <div class="stat-label">Goal Progress <span class="info-tip" data-tip="How much of the expected weekly P&L you've achieved so far this week."><img src="assets/info.png" alt="info" /></span></div>
-          <div class="stat-value">${progressPct}%</div>
-          <div class="stat-sub">of +$${f(weekData.weeklyProfit)} target</div>
-        </div>
-      `;
-      statsEl.hidden = false;
-
-      // ── Comparison banner (this week only) ─────
-      const diff = weekPnl - weekData.weeklyProfit;
-      const isOnTrack = diff >= 0;
-      bannerEl.className = `banner ${isOnTrack ? "on-track" : "behind"}`;
-      bannerEl.innerHTML = isOnTrack
-        ? `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg> On track this week — P&L $${f(weekPnl)} vs target $${f(weekData.weeklyProfit)} (+$${f(diff)})`
-        : `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg> Behind this week — P&L $${f(weekPnl)} vs target $${f(weekData.weeklyProfit)} (${f(diff)})`;
-      bannerEl.hidden = false;
-
-      // ── This week's trades table ───────────────
       const tbody = document.getElementById("overview-tbody");
       document.getElementById("overview-trade-count").textContent =
         thisWeekLogs.length;
@@ -516,13 +476,15 @@
               <td>${f(l.points, 0)}</td>
               <td>${l.sl != null ? f(l.sl, 0) : "—"}</td>
               <td class="note-cell"${l.note ? ' data-note="1"' : ''}><span class="note-text">${l.note || "—"}</span></td>
+              <td><button type="button" class="btn btn-ghost" data-id="${l.id}">Delete</button></td>
             </tr>`,
         )
         .join("");
+      tbody.querySelectorAll(".btn-ghost").forEach((btn) => {
+        btn.addEventListener("click", () => ForexPlan.deleteLog(btn.dataset.id));
+      });
       tradesCard.hidden = false;
     } else {
-      statsEl.hidden = true;
-      bannerEl.hidden = true;
       tradesCard.hidden = true;
     }
   };

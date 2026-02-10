@@ -65,7 +65,7 @@
       if (earningPerDay >= targetPerDay) break;
     }
 
-    return { weeks, totalWeeks: weeks.length, finalCapital: capital, targetPerDay, winRate };
+    return { weeks, totalWeeks: weeks.length, finalCapital: capital, targetPerDay, winRate, maxTradesPerDay };
   };
 
   // ─── Render ────────────────────────────────────────
@@ -81,11 +81,6 @@
         <div class="stat-label">Weeks to goal <span class="info-tip" data-tip="Number of weeks until your daily earnings meet your target. N/A if the goal can't be reached with current settings."><img src="assets/info.png" alt="info" /></span></div>
         <div class="stat-value accent">${reachedGoal ? data.totalWeeks : 'N/A'}</div>
         <div class="stat-sub">$${f(data.targetPerDay)}/day target</div>
-      </div>
-      <div class="stat">
-        <div class="stat-label">Max lot (final) <span class="info-tip" data-tip="Largest lot size you can open on the final week based on your risk % and stop loss."><img src="assets/info.png" alt="info" /></span></div>
-        <div class="stat-value">${f(last.maxLot)}</div>
-        <div class="stat-sub">per order</div>
       </div>
       <div class="stat">
         <div class="stat-label">Final capital <span class="info-tip" data-tip="Your projected total capital at the end of the last simulated week."><img src="assets/info.png" alt="info" /></span></div>
@@ -133,7 +128,7 @@
             <td>$${f(w.capitalStart)}</td>
             <td>$${f(w.riskDollar)}</td>
             <td>${f(w.maxLot)}</td>
-            <td>$${f(w.profitPerWin)}</td>
+            <td>$${f((w.profitPerWin || 0) * (data.maxTradesPerDay || 1))}</td>
             <td class="${w.weeklyProfit < 0 ? 'loss' : ''}">$${f(w.weeklyProfit)}</td>
             <td>$${f(w.capitalEnd)}</td>
           </tr>`;
@@ -274,6 +269,11 @@
       form.maxTradesPerDay.value = params.maxTradesPerDay;
       form.targetPerDay.value = params.targetPerDay;
       form.winRate.value = params.winRate ?? 100;
+
+      const totalPtsEl = document.getElementById('total-target-pts-value');
+      if (totalPtsEl) {
+        totalPtsEl.textContent = ForexPlan.fmtN((params.tpPoints || 0) * (params.maxTradesPerDay || 0), 0);
+      }
 
       const freshResult = ForexPlan.runProjection(params);
       ForexPlan.renderProjectionResult(freshResult);

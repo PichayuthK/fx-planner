@@ -25,7 +25,17 @@
 
   // ─── Projection form ───────────────────────────────
 
-  document.getElementById('projection-form').addEventListener('submit', (e) => {
+  function updateTotalTargetPtsDisplay() {
+    const f = document.getElementById('projection-form');
+    const el = document.getElementById('total-target-pts-value');
+    if (!f || !el) return;
+    const tp = Number(f.tpPoints.value) || 0;
+    const max = Number(f.maxTradesPerDay.value) || 0;
+    el.textContent = ForexPlan.fmtN(tp * max, 0);
+  }
+
+  const projForm = document.getElementById('projection-form');
+  projForm.addEventListener('submit', (e) => {
     e.preventDefault();
     const f = e.target;
     const params = {
@@ -42,6 +52,8 @@
     saveProjection(params, result);
     updateComparison();
   });
+  projForm.tpPoints.addEventListener('input', updateTotalTargetPtsDisplay);
+  projForm.maxTradesPerDay.addEventListener('input', updateTotalTargetPtsDisplay);
 
   // ─── Log form (shared handler) ─────────────────────
 

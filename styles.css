@@ -470,6 +470,15 @@ h2 .info-tip img {
   margin-bottom: 0;
 }
 
+.total-target-pts-line {
+  margin-top: 0.75rem;
+  margin-bottom: 0;
+  font-size: 0.9rem;
+}
+.total-target-pts-line strong {
+  color: var(--text);
+}
+
 /* ---- Forms ---- */
 .form-grid {
   display: grid;
@@ -799,7 +808,7 @@ tr:hover td {
   height: 280px;
 }
 
-/* ---- Overview tab ---- */
+/* ---- This week tab ---- */
 .overview-week-heading {
   text-align: center;
   font-size: 0.85rem;
@@ -808,6 +817,75 @@ tr:hover td {
   text-transform: uppercase;
   letter-spacing: 0.06em;
   margin-bottom: 0.75rem;
+}
+
+.overview-goals-card {
+  padding: 1rem 1.25rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  margin-bottom: 1rem;
+}
+
+.overview-goals-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem 1.5rem;
+}
+
+.overview-goal-block {
+  padding: 0.6rem 0;
+  /* border-bottom: 1px solid var(--border); */
+}
+
+.overview-goal-block:nth-child(odd) {
+  border-right: 1px solid var(--border);
+  padding-right: 1rem;
+}
+
+.overview-goal-block.done {
+  background: rgba(52, 211, 153, 0.08);
+  margin: -0.6rem -0.25rem;
+  padding: 0.6rem 0.75rem;
+  border-radius: var(--radius-sm);
+  border-color: transparent;
+}
+
+.overview-goal-block.done .overview-goal-value {
+  color: var(--green);
+}
+
+.overview-goal-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--muted);
+  margin-bottom: 0.25rem;
+}
+
+.overview-goal-value {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.overview-done-badge {
+  display: inline-block;
+  margin-left: 0.35rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--green);
+}
+
+@media (max-width: 640px) {
+  .overview-goals-grid {
+    grid-template-columns: 1fr;
+  }
+  .overview-goal-block:nth-child(odd) {
+    border-right: none;
+    padding-right: 0;
+  }
 }
 
 .empty-state {
