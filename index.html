@@ -22,7 +22,7 @@
             <polyline points="22 7 13.5 15.5 8.5 10.5 2 17" />
             <polyline points="16 7 22 7 22 13" />
           </svg>
-          <h1 class="app-header">Forex Plan</h1>
+          <h1>Forex Plan</h1>
         </div>
         <div class="settings-wrap">
           <button type="button" class="btn-icon" id="btn-settings" aria-label="Settings">
@@ -41,6 +41,12 @@
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
               Export Trading Log (CSV)
             </button>
+            <div class="dropdown-divider"></div>
+            <button type="button" class="dropdown-item" id="btn-theme">
+              <svg id="theme-icon-dark" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+              <svg id="theme-icon-light" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:none"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+              <span id="theme-label">Light Mode</span>
+            </button>
             <input type="file" id="import-file" accept=".json" hidden />
           </div>
         </div>
@@ -49,11 +55,11 @@
     </header>
 
     <nav class="tabs">
-      <button class="tab active" data-tab="projection">
+      <button class="tab active" data-tab="overview">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <line x1="18" y1="20" x2="18" y2="10" /><line x1="12" y1="20" x2="12" y2="4" /><line x1="6" y1="20" x2="6" y2="14" />
+          <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/>
         </svg>
-        Projection
+        Overview
       </button>
       <button class="tab" data-tab="log">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -61,11 +67,96 @@
         </svg>
         Trading Log
       </button>
+      <button class="tab" data-tab="projection">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="18" y1="20" x2="18" y2="10" /><line x1="12" y1="20" x2="12" y2="4" /><line x1="6" y1="20" x2="6" y2="14" />
+        </svg>
+        Projection
+      </button>
     </nav>
 
     <main>
+      <!-- OVERVIEW TAB -->
+      <section id="overview" class="tab-content active">
+        <div id="overview-week-label" class="overview-week-heading"></div>
+
+        <div id="weekly-plan" class="weekly-plan-bar" hidden></div>
+
+        <div id="overview-stats" class="stat-cards" hidden></div>
+        <div id="overview-vs-projection" class="banner" hidden></div>
+
+        <div class="card">
+          <div class="card-header">
+            <h2>Add Trade</h2>
+          </div>
+          <form id="overview-log-form">
+            <div class="form-row">
+              <div class="form-group">
+                <label for="ov-outcome">Result</label>
+                <select id="ov-outcome" name="outcome" required>
+                  <option value="win">Win</option>
+                  <option value="loss">Loss</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label for="ov-amount">Amount</label>
+                <div class="input-wrap">
+                  <span class="input-prefix">$</span>
+                  <input type="number" id="ov-amount" name="amount" min="0" step="0.01" required />
+                </div>
+              </div>
+              <div class="form-group">
+                <label for="ov-points">TP pts</label>
+                <div class="input-wrap">
+                  <input type="number" id="ov-points" name="points" min="0" step="1" required />
+                  <span class="input-suffix">pts</span>
+                </div>
+              </div>
+              <div class="form-group">
+                <label for="ov-sl">SL pts</label>
+                <div class="input-wrap">
+                  <input type="number" id="ov-sl" name="sl" min="0" step="1" required />
+                  <span class="input-suffix">pts</span>
+                </div>
+              </div>
+              <div class="form-group">
+                <label for="ov-date">Date</label>
+                <input type="date" id="ov-date" name="date" required />
+              </div>
+              <div class="form-group form-group-btn">
+                <button type="submit" class="btn btn-primary">+ Add</button>
+              </div>
+            </div>
+          </form>
+        </div>
+
+        <div class="card" id="overview-trades-card" hidden>
+          <div class="card-header">
+            <h2>This Week's Trades</h2>
+            <span class="badge" id="overview-trade-count">0</span>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr><th>Date</th><th>Result</th><th>Amount</th><th>Lot</th><th>Points</th><th>SL</th></tr>
+              </thead>
+              <tbody id="overview-tbody"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="card" id="overview-empty" hidden>
+          <div class="empty-state">
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="22 7 13.5 15.5 8.5 10.5 2 17" /><polyline points="16 7 22 7 22 13" />
+            </svg>
+            <p>No projection yet. Head to the <strong>Projection</strong> tab to set up your plan.</p>
+          </div>
+        </div>
+      </section>
+
       <!-- PROJECTION TAB -->
-      <section id="projection" class="tab-content active">
+      <section id="projection" class="tab-content">
         <div class="card">
           <div class="card-header">
             <h2>Port Growth Projection</h2>

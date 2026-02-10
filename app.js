@@ -43,9 +43,9 @@
     updateComparison();
   });
 
-  // ─── Log form ──────────────────────────────────────
+  // ─── Log form (shared handler) ─────────────────────
 
-  document.getElementById('log-form').addEventListener('submit', (e) => {
+  function handleLogSubmit(e) {
     e.preventDefault();
     const f = e.target;
     const outcome = f.outcome.value;
@@ -68,7 +68,10 @@
     f.points.value = '';
     f.sl.value = '';
     f.date.value = new Date().toISOString().slice(0, 10);
-  });
+  }
+
+  document.getElementById('log-form').addEventListener('submit', handleLogSubmit);
+  document.getElementById('overview-log-form').addEventListener('submit', handleLogSubmit);
 
   // ─── Settings dropdown ────────────────────────────
 
@@ -105,6 +108,26 @@
     settingsDropdown.classList.remove('open');
   });
 
+  // ─── Theme toggle ────────────────────────────────
+
+  function applyTheme(theme) {
+    document.documentElement.setAttribute('data-theme', theme);
+    localStorage.setItem('fx-theme', theme);
+    const isDark = theme === 'dark';
+    document.getElementById('theme-icon-dark').style.display = isDark ? 'inline' : 'none';
+    document.getElementById('theme-icon-light').style.display = isDark ? 'none' : 'inline';
+    document.getElementById('theme-label').textContent = isDark ? 'Light Mode' : 'Dark Mode';
+  }
+
+  // Restore saved theme (default dark)
+  applyTheme(localStorage.getItem('fx-theme') || 'dark');
+
+  document.getElementById('btn-theme').addEventListener('click', () => {
+    const current = document.documentElement.getAttribute('data-theme') || 'dark';
+    applyTheme(current === 'dark' ? 'light' : 'dark');
+    settingsDropdown.classList.remove('open');
+  });
+
   // ─── Week filter ──────────────────────────────────
 
   document.getElementById('btn-prev-week').addEventListener('click', () => {
@@ -125,9 +148,12 @@
 
   // ─── Init ──────────────────────────────────────────
 
-  document.getElementById('logDate').value = new Date().toISOString().slice(0, 10);
+  const today = new Date().toISOString().slice(0, 10);
+  document.getElementById('logDate').value = today;
+  document.getElementById('ov-date').value = today;
 
   ForexPlan._initWeekFilter();
+  ForexPlan.renderOverview();
   renderLogs();
   updateLogSummary();
   updateComparison();
