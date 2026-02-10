@@ -152,6 +152,38 @@
     settingsDropdown.classList.remove('open');
   });
 
+  // ─── PWA install ─────────────────────────────────
+
+  let deferredInstallPrompt = null;
+  const installBtn = document.getElementById('btn-install-app');
+
+  window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    deferredInstallPrompt = e;
+    if (installBtn) installBtn.removeAttribute('hidden');
+  });
+
+  window.addEventListener('appinstalled', () => {
+    deferredInstallPrompt = null;
+    if (installBtn) installBtn.setAttribute('hidden', '');
+  });
+
+  if (installBtn) {
+    installBtn.addEventListener('click', (e) => {
+      e.preventDefault();
+      settingsDropdown.classList.remove('open');
+      if (!deferredInstallPrompt) {
+        alert('Install from the browser menu: ⋮ → "Install Forex Plan" or "Add to Home Screen". (Install prompt appears in Chrome/Edge on HTTPS.)');
+        return;
+      }
+      deferredInstallPrompt.prompt();
+      deferredInstallPrompt.userChoice.then((choice) => {
+        if (choice.outcome === 'accepted') deferredInstallPrompt = null;
+        installBtn.setAttribute('hidden', '');
+      });
+    });
+  }
+
   // ─── Storage info + clear data ───────────────────
 
   function updateStorageInfo() {
