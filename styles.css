@@ -135,6 +135,7 @@ header {
   right: 0;
   top: 50%;
   transform: translateY(-50%);
+  z-index: 300;
 }
 
 .btn-icon {
@@ -224,6 +225,22 @@ header {
   height: 1px;
   background: var(--border);
   margin: 4px 0;
+}
+
+.dropdown-info {
+  padding: 0.4rem 0.75rem;
+  font-size: 0.7rem;
+  color: var(--muted);
+  line-height: 1.4;
+}
+
+.dropdown-item-danger {
+  color: var(--red);
+}
+
+.dropdown-item-danger:hover {
+  background: var(--red-bg);
+  color: var(--red);
 }
 
 /* ---- Tabs ---- */
@@ -532,6 +549,7 @@ input[type="date"]::-webkit-calendar-picker-indicator {
 
 input[type="number"],
 input[type="date"],
+input[type="text"],
 select {
   width: 100%;
   padding: 0.55rem 0.75rem;
@@ -703,6 +721,30 @@ tr:hover td {
   font-weight: 600;
   color: var(--green);
   letter-spacing: 0.02em;
+}
+
+.note-cell {
+  font-size: 0.78rem;
+  color: var(--muted);
+  max-width: 150px;
+  cursor: default;
+}
+
+.note-cell .note-text {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.note-cell.expanded .note-text {
+  white-space: normal;
+  word-break: break-word;
+  overflow: visible;
+}
+
+.note-cell[data-note] {
+  cursor: pointer;
 }
 
 .win {

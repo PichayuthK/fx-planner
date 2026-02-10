@@ -42,7 +42,7 @@
       return;
     }
 
-    const headers = ['Date', 'Result', 'Amount', 'Lot', 'TP Points', 'SL Points'];
+    const headers = ['Date', 'Result', 'Amount', 'Lot', 'TP Points', 'SL Points', 'Note'];
     const rows = logs
       .sort((a, b) => new Date(a.date) - new Date(b.date))
       .map((l) => [
@@ -52,6 +52,7 @@
         l.lot != null ? l.lot.toFixed(2) : '',
         l.points,
         l.sl != null ? l.sl : '',
+        `"${(l.note || '').replace(/"/g, '""')}"`,
       ].join(','));
 
     const csv = [headers.join(','), ...rows].join('\n');

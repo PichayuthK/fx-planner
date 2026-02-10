@@ -63,10 +63,12 @@
       points,
       sl,
       date: f.date.value,
+      note: (f.note.value || '').trim(),
     });
     f.amount.value = '';
     f.points.value = '';
     f.sl.value = '';
+    f.note.value = '';
     f.date.value = new Date().toISOString().slice(0, 10);
     // Reset toggle to Win
     f.outcome.value = 'win';
@@ -89,6 +91,18 @@
         hidden.value = btn.dataset.value;
       });
     });
+  });
+
+  // ─── Note cell expand on click ────────────────────
+
+  document.addEventListener('click', (e) => {
+    const cell = e.target.closest('.note-cell[data-note]');
+    if (cell) {
+      cell.classList.toggle('expanded');
+      return;
+    }
+    // Collapse any open note cells when clicking elsewhere
+    document.querySelectorAll('.note-cell.expanded').forEach((c) => c.classList.remove('expanded'));
   });
 
   // ─── Settings dropdown ────────────────────────────
@@ -124,6 +138,39 @@
   document.getElementById('btn-export-csv').addEventListener('click', () => {
     ForexPlan.exportCsv();
     settingsDropdown.classList.remove('open');
+  });
+
+  // ─── Storage info + clear data ───────────────────
+
+  function updateStorageInfo() {
+    const keys = ForexPlan.STORAGE_KEYS;
+    const projSize = (localStorage.getItem(keys.projection) || '').length;
+    const logsSize = (localStorage.getItem(keys.logs) || '').length;
+    const themeSize = (localStorage.getItem('fx-theme') || '').length;
+    const totalBytes = (projSize + logsSize + themeSize) * 2; // UTF-16 = 2 bytes per char
+    const logs = ForexPlan.getLogs();
+
+    let sizeStr;
+    if (totalBytes < 1024) sizeStr = totalBytes + ' B';
+    else if (totalBytes < 1024 * 1024) sizeStr = (totalBytes / 1024).toFixed(1) + ' KB';
+    else sizeStr = (totalBytes / (1024 * 1024)).toFixed(2) + ' MB';
+
+    document.getElementById('storage-info').textContent =
+      `${logs.length} trade${logs.length !== 1 ? 's' : ''} · ${sizeStr} used`;
+  }
+
+  updateStorageInfo();
+
+  // Update storage info when dropdown opens
+  settingsBtn.addEventListener('click', updateStorageInfo);
+
+  document.getElementById('btn-clear-data').addEventListener('click', () => {
+    if (!confirm('Delete ALL data? This cannot be undone.\n\nProjection, trading logs, and settings will be permanently removed.')) return;
+    const keys = ForexPlan.STORAGE_KEYS;
+    localStorage.removeItem(keys.projection);
+    localStorage.removeItem(keys.logs);
+    settingsDropdown.classList.remove('open');
+    location.reload();
   });
 
   // ─── Theme toggle ────────────────────────────────

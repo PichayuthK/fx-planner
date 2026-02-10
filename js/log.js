@@ -72,6 +72,9 @@
     ForexPlan.updateLogSummary();
     ForexPlan.updateComparison();
     ForexPlan.renderOverview();
+    // Refresh equity curve in Projection tab
+    const saved = getSavedProjection();
+    if (saved) ForexPlan.renderEquityCurve(saved.params.capital, getLogs());
   };
 
   function updateWeekLabel() {
@@ -114,7 +117,7 @@
 
     if (logs.length === 0) {
       tbody.innerHTML =
-        '<tr><td colspan="7" class="empty">No trades this period</td></tr>';
+        '<tr><td colspan="8" class="empty">No trades this period</td></tr>';
       return;
     }
 
@@ -129,6 +132,7 @@
             <td>${l.lot != null ? f(l.lot) : "—"}</td>
             <td>${f(l.points, 0)}</td>
             <td>${l.sl != null ? f(l.sl, 0) : "—"}</td>
+            <td class="note-cell"${l.note ? ' data-note="1"' : ''}><span class="note-text">${l.note || "—"}</span></td>
             <td><button type="button" class="btn btn-ghost" data-id="${l.id}">Delete</button></td>
           </tr>`,
       )
@@ -256,6 +260,118 @@
     }
 
     el.hidden = false;
+  };
+
+  // ─── Equity curve chart ────────────────────────────
+
+  let equityChart = null;
+
+  ForexPlan.renderEquityCurve = function (initialCapital, allLogs) {
+    const card = document.getElementById('equity-curve-card');
+    const ctx = document.getElementById('equity-chart');
+    const f = ForexPlan.fmtN;
+
+    if (allLogs.length < 2) {
+      if (equityChart) { equityChart.destroy(); equityChart = null; }
+      card.hidden = true;
+      return;
+    }
+
+    // Sort by date, build cumulative equity points
+    const sorted = [...allLogs].sort((a, b) => new Date(a.date) - new Date(b.date));
+    const labels = ['Start'];
+    const data = [initialCapital];
+    let running = initialCapital;
+
+    sorted.forEach((l) => {
+      running += l.outcome === 'win' ? l.amount : -l.amount;
+      labels.push(l.date);
+      data.push(running);
+    });
+
+    // Track peak for drawdown shading
+    let peak = initialCapital;
+    const peakLine = [initialCapital];
+    sorted.forEach((l, i) => {
+      peak = Math.max(peak, data[i + 1]);
+      peakLine.push(peak);
+    });
+
+    if (equityChart) equityChart.destroy();
+
+    // Determine colors based on theme
+    const isDark = document.documentElement.getAttribute('data-theme') !== 'light';
+    const lineColor = isDark ? '#6c9cff' : '#4a7dff';
+    const fillColor = isDark ? 'rgba(108, 156, 255, 0.08)' : 'rgba(74, 125, 255, 0.06)';
+    const peakColor = isDark ? 'rgba(248, 113, 113, 0.15)' : 'rgba(224, 72, 72, 0.08)';
+    const gridColor = isDark ? 'rgba(45, 58, 77, 0.5)' : 'rgba(0, 0, 0, 0.06)';
+    const tickColor = isDark ? '#6b7a90' : '#8893a4';
+
+    equityChart = new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels,
+        datasets: [
+          {
+            label: 'Equity',
+            data,
+            borderColor: lineColor,
+            backgroundColor: fillColor,
+            fill: true,
+            tension: 0.25,
+            pointRadius: 3,
+            pointHoverRadius: 6,
+            borderWidth: 2,
+          },
+          {
+            label: 'Peak',
+            data: peakLine,
+            borderColor: 'transparent',
+            backgroundColor: peakColor,
+            fill: '-1',
+            pointRadius: 0,
+            borderWidth: 0,
+          },
+        ],
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        interaction: { intersect: false, mode: 'index' },
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            backgroundColor: isDark ? '#1a2332' : '#ffffff',
+            titleColor: isDark ? '#e8edf5' : '#1a1d24',
+            bodyColor: isDark ? '#a0aec0' : '#4a5568',
+            borderColor: isDark ? '#2d3a4d' : '#e0e3e8',
+            borderWidth: 1,
+            callbacks: {
+              label: (tip) => {
+                if (tip.datasetIndex === 1) return null;
+                return `Capital: $${f(tip.parsed.y)}`;
+              },
+            },
+            filter: (item) => item.datasetIndex === 0,
+          },
+        },
+        scales: {
+          x: {
+            ticks: { color: tickColor, font: { family: 'Inter', size: 10 }, maxRotation: 45 },
+            grid: { color: gridColor },
+          },
+          y: {
+            ticks: {
+              color: tickColor,
+              font: { family: 'Inter', size: 11 },
+              callback: (v) => '$' + f(v, 0),
+            },
+            grid: { color: gridColor },
+          },
+        },
+      },
+    });
+    card.hidden = false;
   };
 
   // ═══════════════════════════════════════════════════
@@ -400,6 +516,7 @@
               <td>${l.lot != null ? f(l.lot) : "—"}</td>
               <td>${f(l.points, 0)}</td>
               <td>${l.sl != null ? f(l.sl, 0) : "—"}</td>
+              <td class="note-cell"${l.note ? ' data-note="1"' : ''}><span class="note-text">${l.note || "—"}</span></td>
             </tr>`,
         )
         .join("");

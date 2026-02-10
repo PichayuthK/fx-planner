@@ -143,6 +143,12 @@
 
     renderProjectionChart(data);
     document.getElementById('projection-result').hidden = false;
+
+    // Render equity curve (actual capital from logs)
+    const savedProj = getSavedProjection();
+    if (savedProj) {
+      ForexPlan.renderEquityCurve(savedProj.params.capital, getLogs());
+    }
   };
 
   // ─── Chart ─────────────────────────────────────────
