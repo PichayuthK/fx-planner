@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Forex Plan — Growth & Log</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header>
+    <h1>Forex Plan</h1>
+    <p>Port growth projection & daily trading log</p>
+  </header>
+
+  <main>
+    <section id="projection" class="card">
+      <h2>Port growth projection</h2>
+      <p class="muted">Estimate how many weeks to reach your target earning per day.</p>
+      <form id="projection-form">
+        <div class="grid">
+          <label>Capital ($)<input type="number" name="capital" min="1" step="0.01" value="100" required /></label>
+          <label>Risk % per order<input type="number" name="riskPct" min="0.1" max="100" step="0.1" value="5" required /></label>
+          <label>Target TP (points)<input type="number" name="tpPoints" min="1" value="1000" required /></label>
+          <label>SL (points)<input type="number" name="slPoints" min="1" value="500" required /></label>
+          <label>Max trades per day<input type="number" name="maxTradesPerDay" min="1" value="1" required /></label>
+          <label>Target earning per day ($)<input type="number" name="targetPerDay" min="0.01" step="0.01" value="20" required /></label>
+        </div>
+        <button type="submit">Calculate</button>
+      </form>
+      <div id="projection-result" class="result" hidden>
+        <h3>Result</h3>
+        <p id="projection-summary"></p>
+        <div id="projection-weeks"></div>
+      </div>
+    </section>
+
+    <section id="log" class="card">
+      <h2>Daily trading log</h2>
+      <form id="log-form">
+        <div class="row">
+          <label>Win / Loss
+            <select name="outcome" required>
+              <option value="win">Win</option>
+              <option value="loss">Loss</option>
+            </select>
+          </label>
+          <label>Amount ($)<input type="number" name="amount" min="0" step="0.01" required /></label>
+          <label>Points<input type="number" name="points" min="0" step="1" required /></label>
+          <label>Date<input type="date" name="date" required /></label>
+        </div>
+        <button type="submit">Add log</button>
+      </form>
+      <div id="log-summary" class="summary" hidden></div>
+      <div id="log-vs-projection" class="comparison" hidden></div>
+      <table id="log-table">
+        <thead>
+          <tr><th>Date</th><th>Outcome</th><th>Amount ($)</th><th>Points</th><th></th></tr>
+        </thead>
+        <tbody id="log-tbody"></tbody>
+      </table>
+    </section>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>
