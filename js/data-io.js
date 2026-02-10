@@ -28,9 +28,9 @@
         ForexPlan.updateLogSummary();
         ForexPlan.updateComparison();
         ForexPlan.restoreProjection();
-        alert('Data imported successfully!');
+        alert(ForexPlan.t('importSuccess'));
       } catch (err) {
-        alert('Invalid backup file.');
+        alert(ForexPlan.t('importInvalid'));
         console.warn('Import error', err);
       }
     };
@@ -39,7 +39,7 @@
   ForexPlan.exportCsv = function () {
     const logs = ForexPlan.getLogs();
     if (logs.length === 0) {
-      alert('No trading logs to export.');
+      alert(ForexPlan.t('exportNoLogs'));
       return;
     }
 

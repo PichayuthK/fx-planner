@@ -113,7 +113,7 @@
   };
 
   ForexPlan.deleteLog = function (id) {
-    if (!confirm("Delete this trade?")) return;
+    if (!confirm(ForexPlan.t("confirmDeleteTrade"))) return;
     saveLogs(getLogs().filter((l) => l.id !== id));
     ForexPlan.refreshLogView();
   };
@@ -129,10 +129,11 @@
 
     if (logs.length === 0) {
       tbody.innerHTML =
-        '<tr><td colspan="8" class="empty">No trades this period</td></tr>';
+        '<tr><td colspan="8" class="empty">' + ForexPlan.t("noTradesThisPeriod") + '</td></tr>';
       return;
     }
 
+    const t = ForexPlan.t;
     tbody.innerHTML = logs
       .sort((a, b) => new Date(b.date) - new Date(a.date))
       .map(
@@ -145,7 +146,7 @@
             <td>${f(l.points, 0)}</td>
             <td>${l.sl != null ? f(l.sl, 0) : "—"}</td>
             <td class="note-cell"${l.note ? ' data-note="1"' : ''}><span class="note-text">${l.note || "—"}</span></td>
-            <td><button type="button" class="btn btn-ghost" data-id="${l.id}">Delete</button></td>
+            <td><button type="button" class="btn btn-ghost" data-id="${l.id}">${t("delete")}</button></td>
           </tr>`,
       )
       .join("");
@@ -186,11 +187,14 @@
         : 0;
     const rrRatio = avgSl > 0 ? avgTp / avgSl : 0;
 
+    const t = ForexPlan.t;
+    const tradeCountStr = logs.length !== 1 ? t("trades") : t("trade");
+
     let rrHtml = "";
     if (winLogs.length > 0 && lossLogs.length > 0) {
       rrHtml = `
       <div class="stat">
-        <div class="stat-label">R : R ratio <span class="info-tip" data-tip="Actual Reward-to-Risk ratio. Avg TP pts (wins) / avg SL pts (losses)."><img src="assets/info.png" alt="info" /></span></div>
+        <div class="stat-label">${t("rrRatio")} <span class="info-tip" data-tip="Actual Reward-to-Risk ratio. Avg TP pts (wins) / avg SL pts (losses)."><img src="assets/info.png" alt="info" /></span></div>
         <div class="stat-value">${f(rrRatio, 1)}</div>
         <div class="stat-sub">avg ${f(avgTp, 0)} TP / ${f(avgSl, 0)} SL pts</div>
       </div>`;
@@ -203,23 +207,24 @@
       const currentCapital = saved.params.capital + allTimePnl;
       capitalHtml = `
       <div class="stat">
-        <div class="stat-label">Current Capital <span class="info-tip" data-tip="Initial capital + total P&L from all logged trades."><img src="assets/info.png" alt="info" /></span></div>
+        <div class="stat-label">${t("currentCapital")} <span class="info-tip" data-tip="${t("currentCapitalTip")}"><img src="assets/info.png" alt="info" /></span></div>
         <div class="stat-value accent">$${f(currentCapital)}</div>
-        <div class="stat-sub">started at $${f(saved.params.capital)}</div>
+        <div class="stat-sub">${t("startedAt")} $${f(saved.params.capital)}</div>
       </div>`;
     }
 
+    const pnlLabel = isAllTime ? t("pnlAllTime") : t("pnlThisWeekShort");
     el.innerHTML = `
       ${capitalHtml}
       <div class="stat">
-        <div class="stat-label">P&L ${isAllTime ? "(all time)" : "(this week)"} <span class="info-tip" data-tip="${isAllTime ? "Sum of all logged trades." : "Sum of trades for the selected week."}"><img src="assets/info.png" alt="info" /></span></div>
+        <div class="stat-label">P&L ${pnlLabel} <span class="info-tip" data-tip="${isAllTime ? "Sum of all logged trades." : "Sum of trades for the selected week."}"><img src="assets/info.png" alt="info" /></span></div>
         <div class="stat-value ${total >= 0 ? "green" : ""}" style="${total < 0 ? "color:var(--red)" : ""}">
           ${total >= 0 ? "+" : "-"}$${f(Math.abs(total))}
         </div>
-        <div class="stat-sub">${logs.length} trade${logs.length !== 1 ? "s" : ""}</div>
+        <div class="stat-sub">${logs.length} ${tradeCountStr}</div>
       </div>
       <div class="stat">
-        <div class="stat-label">Win rate <span class="info-tip" data-tip="Win % for the selected period."><img src="assets/info.png" alt="info" /></span></div>
+        <div class="stat-label">${t("winRate")} <span class="info-tip" data-tip="Win % for the selected period."><img src="assets/info.png" alt="info" /></span></div>
         <div class="stat-value">${winRate}%</div>
         <div class="stat-sub">${wins}W / ${losses}L</div>
       </div>
@@ -262,13 +267,14 @@
       const isOnTrack = diff >= 0;
 
       const fn = ForexPlan.fmtN;
+      const t = ForexPlan.t;
       el.className = `banner ${isOnTrack ? "on-track" : "behind"}`;
       el.innerHTML = isOnTrack
-        ? `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg> On track — $${fn(actualCapital)} vs projected ~$${fn(projectedForPeriod)} (+$${fn(diff)})`
-        : `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg> Behind — $${fn(actualCapital)} vs projected ~$${fn(projectedForPeriod)} (${fn(diff)})`;
+        ? `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg> ${t("onTrack")} — $${fn(actualCapital)} ${t("vsProjected")} ~$${fn(projectedForPeriod)} (+$${fn(diff)})`
+        : `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg> ${t("behind")} — $${fn(actualCapital)} ${t("vsProjected")} ~$${fn(projectedForPeriod)} (${fn(diff)})`;
     } catch {
       el.className = "banner behind";
-      el.textContent = "Could not compare to projection.";
+      el.textContent = ForexPlan.t("compareError");
     }
 
     el.hidden = false;
@@ -426,15 +432,16 @@
     const weekDone = weekGoalPts > 0 && netPtsWeek >= weekGoalPts;
 
     const f = ForexPlan.fmtN;
+    const t = ForexPlan.t;
     goalsEl.innerHTML = `
       <div class="overview-goals-grid">
         <div class="overview-goal-block ${todayDone ? "done" : ""}">
-          <div class="overview-goal-label">Today</div>
-          <div class="overview-goal-value">${f(netPtsToday, 0)} / ${f(dailyGoalPts, 0)} pts ${todayDone ? "<span class=\"overview-done-badge\">✓ Done</span>" : ""}</div>
+          <div class="overview-goal-label">${t("goalToday")}</div>
+          <div class="overview-goal-value">${f(netPtsToday, 0)} / ${f(dailyGoalPts, 0)} ${t("pts")} ${todayDone ? "<span class=\"overview-done-badge\">" + t("done") + "</span>" : ""}</div>
         </div>
         <div class="overview-goal-block ${weekDone ? "done" : ""}">
-          <div class="overview-goal-label">This week</div>
-          <div class="overview-goal-value">${f(netPtsWeek, 0)} / ${f(weekGoalPts, 0)} pts ${weekDone ? "<span class=\"overview-done-badge\">✓ Done</span>" : ""}</div>
+          <div class="overview-goal-label">${t("goalThisWeek")}</div>
+          <div class="overview-goal-value">${f(netPtsWeek, 0)} / ${f(weekGoalPts, 0)} ${t("pts")} ${weekDone ? "<span class=\"overview-done-badge\">" + t("done") + "</span>" : ""}</div>
         </div>
       </div>
     `;
@@ -444,18 +451,19 @@
     const allTimePnl = totalFromLogs(allLogs);
     const currentCapital = params.capital + allTimePnl;
     const weekPnl = totalFromLogs(thisWeekLogs);
+    const tCount = thisWeekLogs.length !== 1 ? t("trades") : t("trade");
     widgetsEl.innerHTML = `
       <div class="stat">
-        <div class="stat-label">Current Capital <span class="info-tip" data-tip="Initial capital + total P&L from all logged trades."><img src="assets/info.png" alt="info" /></span></div>
+        <div class="stat-label">${t("currentCapital")} <span class="info-tip" data-tip="${t("currentCapitalTip")}"><img src="assets/info.png" alt="info" /></span></div>
         <div class="stat-value accent">$${f(currentCapital)}</div>
-        <div class="stat-sub">started at $${f(params.capital)}</div>
+        <div class="stat-sub">${t("startedAt")} $${f(params.capital)}</div>
       </div>
       <div class="stat">
-        <div class="stat-label">P&L (this week) <span class="info-tip" data-tip="Sum of trades for this week."><img src="assets/info.png" alt="info" /></span></div>
+        <div class="stat-label">${t("pnlThisWeek")} <span class="info-tip" data-tip="${t("pnlThisWeekTip")}"><img src="assets/info.png" alt="info" /></span></div>
         <div class="stat-value ${weekPnl >= 0 ? "green" : ""}" style="${weekPnl < 0 ? "color:var(--red)" : ""}">
           ${weekPnl >= 0 ? "+" : "-"}$${f(Math.abs(weekPnl))}
         </div>
-        <div class="stat-sub">${thisWeekLogs.length} trade${thisWeekLogs.length !== 1 ? "s" : ""}</div>
+        <div class="stat-sub">${thisWeekLogs.length} ${tCount}</div>
       </div>
     `;
     widgetsEl.hidden = false;
@@ -476,7 +484,7 @@
               <td>${f(l.points, 0)}</td>
               <td>${l.sl != null ? f(l.sl, 0) : "—"}</td>
               <td class="note-cell"${l.note ? ' data-note="1"' : ''}><span class="note-text">${l.note || "—"}</span></td>
-              <td><button type="button" class="btn btn-ghost" data-id="${l.id}">Delete</button></td>
+              <td><button type="button" class="btn btn-ghost" data-id="${l.id}">${t("delete")}</button></td>
             </tr>`,
         )
         .join("");

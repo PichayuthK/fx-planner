@@ -167,8 +167,9 @@
     else if (totalBytes < 1024 * 1024) sizeStr = (totalBytes / 1024).toFixed(1) + ' KB';
     else sizeStr = (totalBytes / (1024 * 1024)).toFixed(2) + ' MB';
 
+    const t = ForexPlan.t;
     document.getElementById('storage-info').textContent =
-      `${logs.length} trade${logs.length !== 1 ? 's' : ''} · ${sizeStr} used`;
+      `${logs.length} ${logs.length !== 1 ? t('trades') : t('trade')} · ${sizeStr}`;
   }
 
   updateStorageInfo();
@@ -177,12 +178,44 @@
   settingsBtn.addEventListener('click', updateStorageInfo);
 
   document.getElementById('btn-clear-data').addEventListener('click', () => {
-    if (!confirm('Delete ALL data? This cannot be undone.\n\nProjection, trading logs, and settings will be permanently removed.')) return;
+    if (!confirm(ForexPlan.t('confirmClearData'))) return;
     const keys = ForexPlan.STORAGE_KEYS;
     localStorage.removeItem(keys.projection);
     localStorage.removeItem(keys.logs);
     settingsDropdown.classList.remove('open');
     location.reload();
+  });
+
+  // ─── Locale / i18n ───────────────────────────────
+
+  function applyLocale() {
+    ForexPlan.applyStaticTranslations();
+    const emptyText = document.getElementById('overview-empty-text');
+    if (emptyText) {
+      const s = ForexPlan.t('overviewEmpty');
+      emptyText.innerHTML = s.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+    }
+    const theme = document.documentElement.getAttribute('data-theme') || 'dark';
+    const themeLabel = document.getElementById('theme-label');
+    if (themeLabel) themeLabel.textContent = theme === 'dark' ? ForexPlan.t('settingsLightMode') : ForexPlan.t('settingsDarkMode');
+  }
+
+  window.addEventListener('forexplan-locale-change', () => {
+    applyLocale();
+    ForexPlan.renderOverview();
+    renderLogs();
+    updateLogSummary();
+    updateComparison();
+    restoreProjection();
+  });
+
+  document.getElementById('btn-lang-en').addEventListener('click', () => {
+    ForexPlan.setLocale('en');
+    settingsDropdown.classList.remove('open');
+  });
+  document.getElementById('btn-lang-th').addEventListener('click', () => {
+    ForexPlan.setLocale('th');
+    settingsDropdown.classList.remove('open');
   });
 
   // ─── Theme toggle ────────────────────────────────
@@ -193,7 +226,7 @@
     const isDark = theme === 'dark';
     document.getElementById('theme-icon-dark').style.display = isDark ? 'inline' : 'none';
     document.getElementById('theme-icon-light').style.display = isDark ? 'none' : 'inline';
-    document.getElementById('theme-label').textContent = isDark ? 'Light Mode' : 'Dark Mode';
+    document.getElementById('theme-label').textContent = isDark ? ForexPlan.t('settingsLightMode') : ForexPlan.t('settingsDarkMode');
   }
 
   // Restore saved theme (default dark)
@@ -231,6 +264,7 @@
   document.getElementById('logDate').value = today;
   document.getElementById('ov-date').value = today;
 
+  applyLocale();
   ForexPlan._initWeekFilter();
   ForexPlan.renderOverview();
   renderLogs();

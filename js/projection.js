@@ -72,20 +72,21 @@
 
   ForexPlan.renderProjectionResult = function (data) {
     const f = ForexPlan.fmtN;
+    const t = ForexPlan.t;
     const statsEl = document.getElementById('projection-stats');
     const tbodyEl = document.getElementById('projection-tbody');
     const last = data.weeks[data.weeks.length - 1];
     const reachedGoal = last.weeklyProfit / TRADING_DAYS_PER_WEEK >= data.targetPerDay;
     statsEl.innerHTML = `
       <div class="stat">
-        <div class="stat-label">Weeks to goal <span class="info-tip" data-tip="Number of weeks until your daily earnings meet your target. N/A if the goal can't be reached with current settings."><img src="assets/info.png" alt="info" /></span></div>
+        <div class="stat-label">${t('weeksToGoal')} <span class="info-tip" data-tip="Number of weeks until your daily earnings meet your target. N/A if the goal can't be reached with current settings."><img src="assets/info.png" alt="info" /></span></div>
         <div class="stat-value accent">${reachedGoal ? data.totalWeeks : 'N/A'}</div>
-        <div class="stat-sub">$${f(data.targetPerDay)}/day target</div>
+        <div class="stat-sub">$${f(data.targetPerDay)} ${t('dayTarget')}</div>
       </div>
       <div class="stat">
-        <div class="stat-label">Final capital <span class="info-tip" data-tip="Your projected total capital at the end of the last simulated week."><img src="assets/info.png" alt="info" /></span></div>
+        <div class="stat-label">${t('finalCapital')} <span class="info-tip" data-tip="Your projected total capital at the end of the last simulated week."><img src="assets/info.png" alt="info" /></span></div>
         <div class="stat-value green">$${f(data.finalCapital)}</div>
-        <div class="stat-sub">projected</div>
+        <div class="stat-sub">${t('projected')}</div>
       </div>
     `;
 
@@ -124,7 +125,7 @@
           if (isCurrent) rowClass = 'current-week-row';
           else if (isLast) rowClass = 'highlight-row';
           return `<tr class="${rowClass}">
-            <td>${w.week}${isCurrent ? ' <span class="you-are-here">← You</span>' : ''}${isLast ? ' <img src="assets/trophy.png" alt="goal" class="trophy-icon" />' : ''}</td>
+            <td>${w.week}${isCurrent ? ' <span class="you-are-here">' + t('youAreHere') + '</span>' : ''}${isLast ? ' <img src="assets/trophy.png" alt="goal" class="trophy-icon" />' : ''}</td>
             <td>$${f(w.capitalStart)}</td>
             <td>$${f(w.riskDollar)}</td>
             <td>${f(w.maxLot)}</td>
