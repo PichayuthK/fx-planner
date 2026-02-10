@@ -110,10 +110,9 @@
   ForexPlan.renderLogs = function () {
     const f = ForexPlan.fmtN;
     const logs = getFilteredLogs();
-    const allLogs = getLogs();
     const tbody = document.getElementById("log-tbody");
     const countEl = document.getElementById("log-count");
-    countEl.textContent = allLogs.length;
+    countEl.textContent = logs.length;
 
     if (logs.length === 0) {
       tbody.innerHTML =

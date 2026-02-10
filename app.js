@@ -190,6 +190,8 @@
   document.getElementById('btn-theme').addEventListener('click', () => {
     const current = document.documentElement.getAttribute('data-theme') || 'dark';
     applyTheme(current === 'dark' ? 'light' : 'dark');
+    // Re-render charts so they pick up theme colors
+    restoreProjection();
     settingsDropdown.classList.remove('open');
   });
 

@@ -214,6 +214,10 @@
       });
     }
 
+    const isDark = document.documentElement.getAttribute('data-theme') !== 'light';
+    const gridColor = isDark ? 'rgba(45, 58, 77, 0.5)' : 'rgba(0, 0, 0, 0.06)';
+    const tickColor = isDark ? '#6b7a90' : '#8893a4';
+
     projectionChart = new Chart(ctx, {
       type: 'line',
       data: { labels, datasets },
@@ -223,13 +227,13 @@
         interaction: { intersect: false, mode: 'index' },
         plugins: {
           legend: {
-            labels: { color: '#a0aec0', font: { family: 'Inter', size: 12 } },
+            labels: { color: tickColor, font: { family: 'Inter', size: 12 } },
           },
           tooltip: {
-            backgroundColor: '#1a2332',
-            titleColor: '#e8edf5',
-            bodyColor: '#a0aec0',
-            borderColor: '#2d3a4d',
+            backgroundColor: isDark ? '#1a2332' : '#ffffff',
+            titleColor: isDark ? '#e8edf5' : '#1a1d24',
+            bodyColor: isDark ? '#a0aec0' : '#4a5568',
+            borderColor: isDark ? '#2d3a4d' : '#e0e3e8',
             borderWidth: 1,
             callbacks: {
               label: (tip) => `${tip.dataset.label}: $${ForexPlan.fmtN(tip.parsed.y)}`,
@@ -238,16 +242,16 @@
         },
         scales: {
           x: {
-            ticks: { color: '#6b7a90', font: { family: 'Inter', size: 11 } },
-            grid: { color: 'rgba(45, 58, 77, 0.5)' },
+            ticks: { color: tickColor, font: { family: 'Inter', size: 11 } },
+            grid: { color: gridColor },
           },
           y: {
             ticks: {
-              color: '#6b7a90',
+              color: tickColor,
               font: { family: 'Inter', size: 11 },
               callback: (v) => '$' + ForexPlan.fmtN(v, 0),
             },
-            grid: { color: 'rgba(45, 58, 77, 0.5)' },
+            grid: { color: gridColor },
           },
         },
       },

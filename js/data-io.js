@@ -23,6 +23,7 @@
         const data = JSON.parse(e.target.result);
         if (data.projection) localStorage.setItem(STORAGE_KEYS.projection, data.projection);
         if (data.logs) localStorage.setItem(STORAGE_KEYS.logs, data.logs);
+        ForexPlan.renderOverview();
         ForexPlan.renderLogs();
         ForexPlan.updateLogSummary();
         ForexPlan.updateComparison();
@@ -45,15 +46,18 @@
     const headers = ['Date', 'Result', 'Amount', 'Lot', 'TP Points', 'SL Points', 'Note'];
     const rows = logs
       .sort((a, b) => new Date(a.date) - new Date(b.date))
-      .map((l) => [
-        l.date,
-        l.outcome,
-        l.amount.toFixed(2),
-        l.lot != null ? l.lot.toFixed(2) : '',
-        l.points,
-        l.sl != null ? l.sl : '',
-        `"${(l.note || '').replace(/"/g, '""')}"`,
-      ].join(','));
+      .map((l) => {
+        const signedAmt = l.outcome === 'win' ? l.amount : -l.amount;
+        return [
+          l.date,
+          l.outcome,
+          signedAmt.toFixed(2),
+          l.lot != null ? l.lot.toFixed(2) : '',
+          l.points,
+          l.sl != null ? l.sl : '',
+          `"${(l.note || '').replace(/"/g, '""')}"`,
+        ].join(',');
+      });
 
     const csv = [headers.join(','), ...rows].join('\n');
     const blob = new Blob([csv], { type: 'text/csv' });
