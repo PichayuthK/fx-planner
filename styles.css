@@ -560,6 +560,44 @@ select {
   padding-right: 2rem;
 }
 
+/* ---- Outcome toggle ---- */
+.outcome-toggle {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.outcome-btn {
+  flex: 1;
+  padding: 0.5rem 1rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  font-family: inherit;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+  transition: all var(--transition);
+}
+
+.outcome-btn:hover {
+  border-color: var(--border-light);
+  color: var(--text-secondary);
+}
+
+.outcome-btn.win.active {
+  background: var(--green-bg);
+  border-color: var(--green);
+  color: var(--green);
+}
+
+.outcome-btn.loss.active {
+  background: var(--red-bg);
+  border-color: var(--red);
+  color: var(--red);
+}
+
 /* ---- Buttons ---- */
 .btn {
   display: inline-flex;

@@ -90,14 +90,12 @@
             <h2>Add Trade</h2>
           </div>
           <form id="overview-log-form">
+            <input type="hidden" name="outcome" value="win" />
+            <div class="outcome-toggle">
+              <button type="button" class="outcome-btn win active" data-value="win">Win</button>
+              <button type="button" class="outcome-btn loss" data-value="loss">Loss</button>
+            </div>
             <div class="form-row">
-              <div class="form-group">
-                <label for="ov-outcome">Result</label>
-                <select id="ov-outcome" name="outcome" required>
-                  <option value="win">Win</option>
-                  <option value="loss">Loss</option>
-                </select>
-              </div>
               <div class="form-group">
                 <label for="ov-amount">Amount</label>
                 <div class="input-wrap">
@@ -262,7 +260,7 @@
                     <th>Capital</th>
                     <th>Risk $</th>
                     <th>Max Lot</th>
-                    <th>$/Win</th>
+                    <th>Daily Target</th>
                     <th>Week P&L</th>
                     <th>End Capital</th>
                   </tr>
@@ -281,14 +279,12 @@
             <h2>Add Trade</h2>
           </div>
           <form id="log-form">
+            <input type="hidden" name="outcome" value="win" />
+            <div class="outcome-toggle">
+              <button type="button" class="outcome-btn win active" data-value="win">Win</button>
+              <button type="button" class="outcome-btn loss" data-value="loss">Loss</button>
+            </div>
             <div class="form-row">
-              <div class="form-group">
-                <label for="outcome">Result <span class="info-tip" data-tip="Whether you won or lost this trade."><img src="assets/info.png" alt="info" /></span></label>
-                <select id="outcome" name="outcome" required>
-                  <option value="win">Win</option>
-                  <option value="loss">Loss</option>
-                </select>
-              </div>
               <div class="form-group">
                 <label for="amount">Amount <span class="info-tip" data-tip="How much $ you gained (win) or lost (loss) on this trade."><img src="assets/info.png" alt="info" /></span></label>
                 <div class="input-wrap">

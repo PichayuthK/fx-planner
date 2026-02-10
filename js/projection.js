@@ -71,6 +71,7 @@
   // ─── Render ────────────────────────────────────────
 
   ForexPlan.renderProjectionResult = function (data) {
+    const f = ForexPlan.fmtN;
     const statsEl = document.getElementById('projection-stats');
     const tbodyEl = document.getElementById('projection-tbody');
     const last = data.weeks[data.weeks.length - 1];
@@ -79,16 +80,16 @@
       <div class="stat">
         <div class="stat-label">Weeks to goal <span class="info-tip" data-tip="Number of weeks until your daily earnings meet your target. N/A if the goal can't be reached with current settings."><img src="assets/info.png" alt="info" /></span></div>
         <div class="stat-value accent">${reachedGoal ? data.totalWeeks : 'N/A'}</div>
-        <div class="stat-sub">$${data.targetPerDay}/day target</div>
+        <div class="stat-sub">$${f(data.targetPerDay)}/day target</div>
       </div>
       <div class="stat">
         <div class="stat-label">Max lot (final) <span class="info-tip" data-tip="Largest lot size you can open on the final week based on your risk % and stop loss."><img src="assets/info.png" alt="info" /></span></div>
-        <div class="stat-value">${last.maxLot.toFixed(2)}</div>
+        <div class="stat-value">${f(last.maxLot)}</div>
         <div class="stat-sub">per order</div>
       </div>
       <div class="stat">
         <div class="stat-label">Final capital <span class="info-tip" data-tip="Your projected total capital at the end of the last simulated week."><img src="assets/info.png" alt="info" /></span></div>
-        <div class="stat-value green">$${data.finalCapital.toFixed(2)}</div>
+        <div class="stat-value green">$${f(data.finalCapital)}</div>
         <div class="stat-sub">projected</div>
       </div>
     `;
@@ -129,12 +130,12 @@
           else if (isLast) rowClass = 'highlight-row';
           return `<tr class="${rowClass}">
             <td>${w.week}${isCurrent ? ' <span class="you-are-here">← You</span>' : ''}${isLast ? ' <img src="assets/trophy.png" alt="goal" class="trophy-icon" />' : ''}</td>
-            <td>$${w.capitalStart.toFixed(2)}</td>
-            <td>$${w.riskDollar.toFixed(2)}</td>
-            <td>${w.maxLot.toFixed(2)}</td>
-            <td>$${w.profitPerWin.toFixed(2)}</td>
-            <td class="${w.weeklyProfit < 0 ? 'loss' : ''}">$${w.weeklyProfit.toFixed(2)}</td>
-            <td>$${w.capitalEnd.toFixed(2)}</td>
+            <td>$${f(w.capitalStart)}</td>
+            <td>$${f(w.riskDollar)}</td>
+            <td>${f(w.maxLot)}</td>
+            <td>$${f(w.profitPerWin)}</td>
+            <td class="${w.weeklyProfit < 0 ? 'loss' : ''}">$${f(w.weeklyProfit)}</td>
+            <td>$${f(w.capitalEnd)}</td>
           </tr>`;
         }
       )
@@ -225,7 +226,7 @@
             borderColor: '#2d3a4d',
             borderWidth: 1,
             callbacks: {
-              label: (tip) => `${tip.dataset.label}: $${tip.parsed.y.toFixed(2)}`,
+              label: (tip) => `${tip.dataset.label}: $${ForexPlan.fmtN(tip.parsed.y)}`,
             },
           },
         },
@@ -238,7 +239,7 @@
             ticks: {
               color: '#6b7a90',
               font: { family: 'Inter', size: 11 },
-              callback: (v) => '$' + v,
+              callback: (v) => '$' + ForexPlan.fmtN(v, 0),
             },
             grid: { color: 'rgba(45, 58, 77, 0.5)' },
           },

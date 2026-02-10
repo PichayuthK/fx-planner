@@ -68,10 +68,28 @@
     f.points.value = '';
     f.sl.value = '';
     f.date.value = new Date().toISOString().slice(0, 10);
+    // Reset toggle to Win
+    f.outcome.value = 'win';
+    f.querySelectorAll('.outcome-btn').forEach((b) => {
+      b.classList.toggle('active', b.dataset.value === 'win');
+    });
   }
 
   document.getElementById('log-form').addEventListener('submit', handleLogSubmit);
   document.getElementById('overview-log-form').addEventListener('submit', handleLogSubmit);
+
+  // ─── Outcome toggle buttons ──────────────────────
+
+  document.querySelectorAll('.outcome-toggle').forEach((toggle) => {
+    const hidden = toggle.closest('form').querySelector('input[name="outcome"]');
+    toggle.querySelectorAll('.outcome-btn').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        toggle.querySelectorAll('.outcome-btn').forEach((b) => b.classList.remove('active'));
+        btn.classList.add('active');
+        hidden.value = btn.dataset.value;
+      });
+    });
+  });
 
   // ─── Settings dropdown ────────────────────────────
 

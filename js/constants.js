@@ -8,3 +8,12 @@ ForexPlan.STORAGE_KEYS = {
   projection: 'forex-plan-projection',
   logs: 'forex-plan-logs',
 };
+
+// Number formatting with thousand separators
+ForexPlan.fmtN = function (n, decimals) {
+  if (decimals === undefined) decimals = 2;
+  return Number(n).toLocaleString('en-US', {
+    minimumFractionDigits: decimals,
+    maximumFractionDigits: decimals,
+  });
+};

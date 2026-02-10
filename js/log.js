@@ -105,6 +105,7 @@
   // ─── Log tab: render table ─────────────────────────
 
   ForexPlan.renderLogs = function () {
+    const f = ForexPlan.fmtN;
     const logs = getFilteredLogs();
     const allLogs = getLogs();
     const tbody = document.getElementById("log-tbody");
@@ -124,10 +125,10 @@
           `<tr>
             <td>${l.date}</td>
             <td><span class="${l.outcome}">${l.outcome.toUpperCase()}</span></td>
-            <td>$${l.amount.toFixed(2)}</td>
-            <td>${l.lot != null ? l.lot.toFixed(2) : "—"}</td>
-            <td>${l.points}</td>
-            <td>${l.sl != null ? l.sl : "—"}</td>
+            <td>$${f(l.amount)}</td>
+            <td>${l.lot != null ? f(l.lot) : "—"}</td>
+            <td>${f(l.points, 0)}</td>
+            <td>${l.sl != null ? f(l.sl, 0) : "—"}</td>
             <td><button type="button" class="btn btn-ghost" data-id="${l.id}">Delete</button></td>
           </tr>`,
       )
@@ -141,6 +142,7 @@
   // ─── Log tab: summary stats ────────────────────────
 
   ForexPlan.updateLogSummary = function () {
+    const f = ForexPlan.fmtN;
     const logs = getFilteredLogs();
     const allLogs = getLogs();
     const el = document.getElementById("log-cards");
@@ -173,8 +175,8 @@
       rrHtml = `
       <div class="stat">
         <div class="stat-label">R : R ratio <span class="info-tip" data-tip="Actual Reward-to-Risk ratio. Avg TP pts (wins) / avg SL pts (losses)."><img src="assets/info.png" alt="info" /></span></div>
-        <div class="stat-value">${rrRatio.toFixed(1)}</div>
-        <div class="stat-sub">avg ${avgTp.toFixed(0)} TP / ${avgSl.toFixed(0)} SL pts</div>
+        <div class="stat-value">${f(rrRatio, 1)}</div>
+        <div class="stat-sub">avg ${f(avgTp, 0)} TP / ${f(avgSl, 0)} SL pts</div>
       </div>`;
     }
 
@@ -186,8 +188,8 @@
       capitalHtml = `
       <div class="stat">
         <div class="stat-label">Current Capital <span class="info-tip" data-tip="Initial capital + total P&L from all logged trades."><img src="assets/info.png" alt="info" /></span></div>
-        <div class="stat-value accent">$${currentCapital.toFixed(2)}</div>
-        <div class="stat-sub">started at $${saved.params.capital.toFixed(2)}</div>
+        <div class="stat-value accent">$${f(currentCapital)}</div>
+        <div class="stat-sub">started at $${f(saved.params.capital)}</div>
       </div>`;
     }
 
@@ -196,7 +198,7 @@
       <div class="stat">
         <div class="stat-label">P&L ${isAllTime ? "(all time)" : "(this week)"} <span class="info-tip" data-tip="${isAllTime ? "Sum of all logged trades." : "Sum of trades for the selected week."}"><img src="assets/info.png" alt="info" /></span></div>
         <div class="stat-value ${total >= 0 ? "green" : ""}" style="${total < 0 ? "color:var(--red)" : ""}">
-          ${total >= 0 ? "+" : "-"}$${Math.abs(total).toFixed(2)}
+          ${total >= 0 ? "+" : "-"}$${f(Math.abs(total))}
         </div>
         <div class="stat-sub">${logs.length} trade${logs.length !== 1 ? "s" : ""}</div>
       </div>
@@ -243,10 +245,11 @@
       const diff = actualCapital - projectedForPeriod;
       const isOnTrack = diff >= 0;
 
+      const fn = ForexPlan.fmtN;
       el.className = `banner ${isOnTrack ? "on-track" : "behind"}`;
       el.innerHTML = isOnTrack
-        ? `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg> On track — $${actualCapital.toFixed(2)} vs projected ~$${projectedForPeriod.toFixed(2)} (+$${diff.toFixed(2)})`
-        : `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg> Behind — $${actualCapital.toFixed(2)} vs projected ~$${projectedForPeriod.toFixed(2)} (${diff.toFixed(2)})`;
+        ? `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg> On track — $${fn(actualCapital)} vs projected ~$${fn(projectedForPeriod)} (+$${fn(diff)})`
+        : `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg> Behind — $${fn(actualCapital)} vs projected ~$${fn(projectedForPeriod)} (${fn(diff)})`;
     } catch {
       el.className = "banner behind";
       el.textContent = "Could not compare to projection.";
@@ -299,36 +302,37 @@
       }
     }
 
+    const f = ForexPlan.fmtN;
     const wkPnlSign = weekData.weeklyProfit >= 0 ? '+' : '-';
     planEl.innerHTML = `
       <div class="plan-bar-header">
         <span class="plan-bar-title">Week ${weekData.week}</span>
-        <span class="info-tip" data-tip="Week ${weekData.week} plan from your projection. Capital: $${currentCapital.toFixed(2)}, Risk ${params.riskPct}%, Max Lot ${weekData.maxLot.toFixed(2)}, at ${params.winRate ?? 100}% win rate."><img src="assets/info.png" alt="info" /></span>
+        <span class="info-tip" data-tip="Week ${weekData.week} plan from your projection. Capital: $${f(currentCapital)}, Risk ${params.riskPct}%, Max Lot ${f(weekData.maxLot)}, at ${params.winRate ?? 100}% win rate."><img src="assets/info.png" alt="info" /></span>
       </div>
       <div class="plan-bar-chips">
         <div class="plan-chip">
           <span class="plan-chip-label">Capital</span>
-          <span class="plan-chip-value accent">$${currentCapital.toFixed(2)}</span>
+          <span class="plan-chip-value accent">$${f(currentCapital)}</span>
         </div>
         <div class="plan-divider"></div>
         <div class="plan-chip">
           <span class="plan-chip-label">Risk/trade</span>
-          <span class="plan-chip-value">$${weekData.riskDollar.toFixed(2)}</span>
+          <span class="plan-chip-value">$${f(weekData.riskDollar)}</span>
         </div>
         <div class="plan-divider"></div>
         <div class="plan-chip">
           <span class="plan-chip-label">Lot/order</span>
-          <span class="plan-chip-value">${weekData.maxLot.toFixed(2)}</span>
+          <span class="plan-chip-value">${f(weekData.maxLot)}</span>
         </div>
         <div class="plan-divider"></div>
         <div class="plan-chip">
           <span class="plan-chip-label">Daily Target</span>
-          <span class="plan-chip-value green">+$${weekData.profitPerWin.toFixed(2)}</span>
+          <span class="plan-chip-value green">+$${f(weekData.profitPerWin)}</span>
         </div>
         <div class="plan-divider"></div>
         <div class="plan-chip">
           <span class="plan-chip-label">Wk Target</span>
-          <span class="plan-chip-value ${weekData.weeklyProfit >= 0 ? 'green' : ''}">${wkPnlSign}$${Math.abs(weekData.weeklyProfit).toFixed(2)}</span>
+          <span class="plan-chip-value ${weekData.weeklyProfit >= 0 ? 'green' : ''}">${wkPnlSign}$${f(Math.abs(weekData.weeklyProfit))}</span>
         </div>
       </div>
     `;
@@ -355,7 +359,7 @@
         <div class="stat">
           <div class="stat-label">This Week P&L</div>
           <div class="stat-value ${weekPnl >= 0 ? "green" : ""}" style="${weekPnl < 0 ? "color:var(--red)" : ""}">
-            ${weekPnl >= 0 ? "+" : "-"}$${Math.abs(weekPnl).toFixed(2)}
+            ${weekPnl >= 0 ? "+" : "-"}$${f(Math.abs(weekPnl))}
           </div>
           <div class="stat-sub">${thisWeekLogs.length} trade${thisWeekLogs.length !== 1 ? "s" : ""}</div>
         </div>
@@ -367,7 +371,7 @@
         <div class="stat">
           <div class="stat-label">Goal Progress <span class="info-tip" data-tip="How much of the expected weekly P&L you've achieved so far this week."><img src="assets/info.png" alt="info" /></span></div>
           <div class="stat-value">${progressPct}%</div>
-          <div class="stat-sub">of +$${weekData.weeklyProfit.toFixed(2)} target</div>
+          <div class="stat-sub">of +$${f(weekData.weeklyProfit)} target</div>
         </div>
       `;
       statsEl.hidden = false;
@@ -377,8 +381,8 @@
       const isOnTrack = diff >= 0;
       bannerEl.className = `banner ${isOnTrack ? "on-track" : "behind"}`;
       bannerEl.innerHTML = isOnTrack
-        ? `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg> On track this week — P&L $${weekPnl.toFixed(2)} vs target $${weekData.weeklyProfit.toFixed(2)} (+$${diff.toFixed(2)})`
-        : `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg> Behind this week — P&L $${weekPnl.toFixed(2)} vs target $${weekData.weeklyProfit.toFixed(2)} (${diff.toFixed(2)})`;
+        ? `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg> On track this week — P&L $${f(weekPnl)} vs target $${f(weekData.weeklyProfit)} (+$${f(diff)})`
+        : `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg> Behind this week — P&L $${f(weekPnl)} vs target $${f(weekData.weeklyProfit)} (${f(diff)})`;
       bannerEl.hidden = false;
 
       // ── This week's trades table ───────────────
@@ -392,10 +396,10 @@
             `<tr>
               <td>${l.date}</td>
               <td><span class="${l.outcome}">${l.outcome.toUpperCase()}</span></td>
-              <td>$${l.amount.toFixed(2)}</td>
-              <td>${l.lot != null ? l.lot.toFixed(2) : "—"}</td>
-              <td>${l.points}</td>
-              <td>${l.sl != null ? l.sl : "—"}</td>
+              <td>$${f(l.amount)}</td>
+              <td>${l.lot != null ? f(l.lot) : "—"}</td>
+              <td>${f(l.points, 0)}</td>
+              <td>${l.sl != null ? f(l.sl, 0) : "—"}</td>
             </tr>`,
         )
         .join("");
