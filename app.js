@@ -34,6 +34,51 @@
     el.textContent = ForexPlan.fmtN(tp * max, 0);
   }
 
+  function updateProjectionExplainer() {
+    const el = document.getElementById('projection-explainer');
+    const f = document.getElementById('projection-form');
+    if (!el || !f) return;
+    const fmt = ForexPlan.fmtN;
+    const t = ForexPlan.t;
+    const capital = Number(f.capital.value) || 0;
+    const riskPct = Number(f.riskPct.value) || 0;
+    const winRate = Number(f.winRate.value);
+    const tpPoints = Number(f.tpPoints.value) || 0;
+    const slPoints = Number(f.slPoints.value) || 0;
+    const maxTradesPerDay = Number(f.maxTradesPerDay.value) || 0;
+    const targetPerDay = Number(f.targetPerDay.value) || 0;
+    const riskDollar = capital * (riskPct / 100);
+    const dailyGoalPts = maxTradesPerDay * tpPoints;
+
+    let weeksToGoal = t('projectionExplainerWeeksPlaceholder');
+    const saved = ForexPlan.getSavedProjection();
+    if (saved && saved.result && saved.result.weeks && saved.result.weeks.length > 0) {
+      const last = saved.result.weeks[saved.result.weeks.length - 1];
+      const TRADING_DAYS = ForexPlan.TRADING_DAYS_PER_WEEK || 5;
+      const reachedGoal = last.weeklyProfit / TRADING_DAYS >= (saved.params.targetPerDay || 0);
+      weeksToGoal = reachedGoal ? String(saved.result.totalWeeks) + ' ' + (saved.result.totalWeeks === 1 ? ForexPlan.t('weekUnit') : ForexPlan.t('weeksUnit')) : t('projectionExplainerWeeksPlaceholder');
+    }
+
+    const template = t('projectionExplainerTemplate');
+    const replacements = {
+      capital: capital ? '$' + fmt(capital, 0) : '—',
+      riskPct: riskPct || '—',
+      riskDollar: riskDollar ? '$' + fmt(riskDollar, 0) : '—',
+      winRate: f.winRate.value === '' ? '—' : String(winRate >= 0 && winRate <= 100 ? winRate : 100),
+      maxTradesPerDay: maxTradesPerDay || '—',
+      tpPoints: tpPoints ? fmt(tpPoints, 0) : '—',
+      slPoints: slPoints ? fmt(slPoints, 0) : '—',
+      dailyGoalPts: dailyGoalPts ? fmt(dailyGoalPts, 0) : '—',
+      targetPerDay: targetPerDay ? '$' + fmt(targetPerDay, 0) : '—',
+      weeksToGoal,
+    };
+    let text = template;
+    Object.keys(replacements).forEach((key) => {
+      text = text.replace(new RegExp('{{' + key + '}}', 'g'), replacements[key]);
+    });
+    el.textContent = text;
+  }
+
   const projForm = document.getElementById('projection-form');
   projForm.addEventListener('submit', (e) => {
     e.preventDefault();
@@ -51,9 +96,14 @@
     renderProjectionResult(result);
     saveProjection(params, result);
     updateComparison();
+    updateProjectionExplainer();
   });
   projForm.tpPoints.addEventListener('input', updateTotalTargetPtsDisplay);
   projForm.maxTradesPerDay.addEventListener('input', updateTotalTargetPtsDisplay);
+  ['capital', 'riskPct', 'winRate', 'tpPoints', 'slPoints', 'maxTradesPerDay', 'targetPerDay'].forEach((name) => {
+    projForm[name].addEventListener('input', updateProjectionExplainer);
+    projForm[name].addEventListener('change', updateProjectionExplainer);
+  });
 
   // ─── Log form (shared handler) ─────────────────────
 
@@ -239,6 +289,7 @@
     updateLogSummary();
     updateComparison();
     restoreProjection();
+    updateProjectionExplainer();
   });
 
   document.getElementById('btn-lang-en').addEventListener('click', () => {
@@ -303,4 +354,5 @@
   updateLogSummary();
   updateComparison();
   restoreProjection();
+  updateProjectionExplainer();
 })();

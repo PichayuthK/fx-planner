@@ -431,6 +431,23 @@
     const todayDone = dailyGoalPts > 0 && netPtsToday >= dailyGoalPts;
     const weekDone = weekGoalPts > 0 && netPtsWeek >= weekGoalPts;
 
+    const allTimePnl = totalFromLogs(allLogs);
+    const currentCapital = params.capital + allTimePnl;
+    const weeks = saved.result.weeks;
+    let currentWeekIdx = 0;
+    if (weeks.length > 0) {
+      for (let i = 0; i < weeks.length; i++) {
+        const w = weeks[i];
+        if (currentCapital >= w.capitalStart && currentCapital <= w.capitalEnd) {
+          currentWeekIdx = i;
+          break;
+        }
+      }
+      if (currentCapital < weeks[0].capitalStart) currentWeekIdx = 0;
+      if (currentCapital > weeks[weeks.length - 1].capitalEnd) currentWeekIdx = weeks.length - 1;
+    }
+    const lotThisWeek = weeks.length > 0 ? weeks[currentWeekIdx].maxLot : ForexPlan.MIN_LOT;
+
     const f = ForexPlan.fmtN;
     const t = ForexPlan.t;
     goalsEl.innerHTML = `
@@ -448,8 +465,6 @@
     goalsEl.hidden = false;
 
     // ── Current Capital & P&L (this week) ────────
-    const allTimePnl = totalFromLogs(allLogs);
-    const currentCapital = params.capital + allTimePnl;
     const weekPnl = totalFromLogs(thisWeekLogs);
     const tCount = thisWeekLogs.length !== 1 ? t("trades") : t("trade");
     widgetsEl.innerHTML = `
@@ -457,6 +472,11 @@
         <div class="stat-label">${t("currentCapital")} <span class="info-tip" data-tip="${t("currentCapitalTip")}"><img src="assets/info.png" alt="info" /></span></div>
         <div class="stat-value accent">$${f(currentCapital)}</div>
         <div class="stat-sub">${t("startedAt")} $${f(params.capital)}</div>
+      </div>
+      <div class="stat">
+        <div class="stat-label">${t("lotThisWeek")} <span class="info-tip" data-tip="${t("lotThisWeekTip")}"><img src="assets/info.png" alt="info" /></span></div>
+        <div class="stat-value accent">${f(lotThisWeek, 2)}</div>
+        <div class="stat-sub">${t("maxLot")}</div>
       </div>
       <div class="stat">
         <div class="stat-label">${t("pnlThisWeek")} <span class="info-tip" data-tip="${t("pnlThisWeekTip")}"><img src="assets/info.png" alt="info" /></span></div>

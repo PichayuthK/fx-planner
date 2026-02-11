@@ -105,13 +105,13 @@
           <div class="card-header">
             <h2 data-i18n="addTrade">Add Trade</h2>
           </div>
-          <form id="overview-log-form">
+          <form id="overview-log-form" class="add-trade-form">
             <input type="hidden" name="outcome" value="win" />
             <div class="outcome-toggle">
               <button type="button" class="outcome-btn win active" data-value="win"><span data-i18n="win">Win</span></button>
               <button type="button" class="outcome-btn loss" data-value="loss"><span data-i18n="loss">Loss</span></button>
             </div>
-            <div class="form-row">
+            <div class="form-row form-row-inputs">
               <div class="form-group">
                 <label for="ov-amount" data-i18n="amount">Amount</label>
                 <div class="input-wrap">
@@ -137,15 +137,15 @@
                 <label for="ov-date" data-i18n="date">Date</label>
                 <input type="date" id="ov-date" name="date" required />
               </div>
-              <div class="form-group form-group-btn">
-                <button type="submit" class="btn btn-primary" data-i18n="add">+ Add</button>
-              </div>
             </div>
-            <div class="form-row">
+            <div class="form-row form-row-note">
               <div class="form-group" style="flex:1;min-width:100%">
                 <label for="ov-note" data-i18n="note">Note</label>
                 <input type="text" id="ov-note" name="note" data-i18n-ph="notePlaceholder" placeholder="e.g. breakout, news scalp…" maxlength="140" autocomplete="off" />
               </div>
+            </div>
+            <div class="form-row form-row-btn">
+              <button type="submit" class="btn btn-primary" data-i18n="add">Enter</button>
             </div>
           </form>
         </div>
@@ -182,6 +182,7 @@
             <h2 data-i18n="projectionTitle">Port Growth Projection</h2>
             <p class="muted" data-i18n="projectionSubtitle">Estimate how many weeks to reach your daily earning target</p>
           </div>
+          <p id="projection-explainer" class="projection-explainer muted"></p>
           <form id="projection-form">
             <fieldset class="form-section">
               <legend data-i18n="initialSetup">Initial Setup</legend>
@@ -312,13 +313,13 @@
           <div class="card-header">
             <h2 data-i18n="addTrade">Add Trade</h2>
           </div>
-          <form id="log-form">
+          <form id="log-form" class="add-trade-form">
             <input type="hidden" name="outcome" value="win" />
             <div class="outcome-toggle">
               <button type="button" class="outcome-btn win active" data-value="win"><span data-i18n="win">Win</span></button>
               <button type="button" class="outcome-btn loss" data-value="loss"><span data-i18n="loss">Loss</span></button>
             </div>
-            <div class="form-row">
+            <div class="form-row form-row-inputs">
               <div class="form-group">
                 <label for="amount"><span data-i18n="amount">Amount</span> <span class="info-tip" data-tip="How much $ you gained (win) or lost (loss) on this trade."><img src="assets/info.png" alt="info" /></span></label>
                 <div class="input-wrap">
@@ -344,15 +345,15 @@
                 <label for="logDate"><span data-i18n="date">Date</span> <span class="info-tip" data-tip="When you took this trade. Used to calculate which week you're in for comparison vs projection."><img src="assets/info.png" alt="info" /></span></label>
                 <input type="date" id="logDate" name="date" required />
               </div>
-              <div class="form-group form-group-btn">
-                <button type="submit" class="btn btn-primary" data-i18n="add">+ Add</button>
-              </div>
             </div>
-            <div class="form-row">
+            <div class="form-row form-row-note">
               <div class="form-group" style="flex:1;min-width:100%">
                 <label for="logNote"><span data-i18n="note">Note</span> <span class="info-tip" data-tip="Short reason or setup for this trade. e.g. breakout, news, trendline bounce."><img src="assets/info.png" alt="info" /></span></label>
                 <input type="text" id="logNote" name="note" data-i18n-ph="notePlaceholder" placeholder="e.g. breakout, news scalp…" maxlength="140" autocomplete="off" />
               </div>
+            </div>
+            <div class="form-row form-row-btn">
+              <button type="submit" class="btn btn-primary" data-i18n="add">Enter</button>
             </div>
           </form>
         </div>
