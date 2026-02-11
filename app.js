@@ -118,6 +118,7 @@
       ? amount / points
       : sl > 0 ? amount / sl : 0;
 
+    const commission = Number(f.commission?.value) || 0;
     addLog({
       outcome,
       amount,
@@ -126,10 +127,12 @@
       sl,
       date: f.date.value,
       note: (f.note.value || '').trim(),
+      commission,
     });
     f.amount.value = '';
     f.points.value = '';
     f.sl.value = '';
+    if (f.commission) f.commission.value = '0';
     f.note.value = '';
     f.date.value = new Date().toISOString().slice(0, 10);
     // Reset toggle to Win

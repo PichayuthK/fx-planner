@@ -43,15 +43,18 @@
       return;
     }
 
-    const headers = ['Date', 'Result', 'Amount', 'Lot', 'TP Points', 'SL Points', 'Note'];
+    const headers = ['Date', 'Result', 'Amount', 'Commission', 'P/L', 'Lot', 'TP Points', 'SL Points', 'Note'];
     const rows = logs
       .sort((a, b) => new Date(a.date) - new Date(b.date))
       .map((l) => {
-        const signedAmt = l.outcome === 'win' ? l.amount : -l.amount;
+        const commission = l.commission != null ? l.commission : 0;
+        const netGain = l.outcome === 'win' ? l.amount - commission : -(l.amount + commission);
         return [
           l.date,
           l.outcome,
-          signedAmt.toFixed(2),
+          l.amount.toFixed(2),
+          commission.toFixed(2),
+          netGain.toFixed(2),
           l.lot != null ? l.lot.toFixed(2) : '',
           l.points,
           l.sl != null ? l.sl : '',

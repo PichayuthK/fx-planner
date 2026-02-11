@@ -96,7 +96,10 @@
     let currentCapital = null;
     let currentWeekIdx = -1;
     if (saved && logs.length > 0) {
-      const totalPnl = logs.reduce((s, l) => s + (l.outcome === 'win' ? l.amount : -l.amount), 0);
+      const totalPnl = logs.reduce((s, l) => {
+        const commission = l.commission ?? 0;
+        return s + (l.outcome === 'win' ? l.amount - commission : -l.amount - commission);
+      }, 0);
       currentCapital = saved.params.capital + totalPnl;
       // Find the week where capitalStart <= currentCapital < capitalEnd (or last week)
       for (let i = 0; i < data.weeks.length; i++) {
@@ -170,7 +173,8 @@
           const daysDiff = (new Date(l.date) - firstDate) / (1000 * 60 * 60 * 24);
           const weekIdx = Math.floor(daysDiff / 7);
           if (!weekBuckets[weekIdx]) weekBuckets[weekIdx] = 0;
-          weekBuckets[weekIdx] += l.outcome === 'win' ? l.amount : -l.amount;
+          const commission = l.commission ?? 0;
+        weekBuckets[weekIdx] += l.outcome === 'win' ? l.amount - commission : -l.amount - commission;
         });
 
         const maxWeek = Math.max(...Object.keys(weekBuckets).map(Number));

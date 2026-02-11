@@ -33,7 +33,10 @@
 
   function totalFromLogs(logs) {
     return logs.reduce(
-      (sum, l) => sum + (l.outcome === "win" ? l.amount : -l.amount),
+      (sum, l) => {
+        const commission = l.commission ?? 0;
+        return sum + (l.outcome === "win" ? l.amount - commission : -l.amount - commission);
+      },
       0,
     );
   }
@@ -129,25 +132,36 @@
 
     if (logs.length === 0) {
       tbody.innerHTML =
-        '<tr><td colspan="8" class="empty">' + ForexPlan.t("noTradesThisPeriod") + '</td></tr>';
+        '<tr><td colspan="10" class="empty">' + ForexPlan.t("noTradesThisPeriod") + '</td></tr>';
       return;
     }
 
     const t = ForexPlan.t;
+    function netGain(l) {
+      const commission = l.commission ?? 0;
+      const n = l.outcome === "win" ? l.amount - commission : -(l.amount + commission);
+      return n;
+    }
     tbody.innerHTML = logs
       .sort((a, b) => new Date(b.date) - new Date(a.date))
       .map(
-        (l) =>
-          `<tr>
+        (l) => {
+          const net = netGain(l);
+          const netCls = net >= 0 ? "green" : "";
+          const netStyle = net < 0 ? ' style="color:var(--red)"' : "";
+          return `<tr>
             <td>${l.date}</td>
             <td><span class="${l.outcome}">${l.outcome.toUpperCase()}</span></td>
             <td>$${f(l.amount)}</td>
+            <td>${l.commission != null && l.commission !== 0 ? '$' + f(l.commission) : "—"}</td>
+            <td class="${netCls}"${netStyle}>${net >= 0 ? "+" : ""}$${f(Math.abs(net))}</td>
             <td>${l.lot != null ? f(l.lot) : "—"}</td>
             <td>${f(l.points, 0)}</td>
             <td>${l.sl != null ? f(l.sl, 0) : "—"}</td>
             <td class="note-cell"${l.note ? ' data-note="1"' : ''}><span class="note-text">${l.note || "—"}</span></td>
             <td><button type="button" class="btn btn-ghost" data-id="${l.id}">${t("delete")}</button></td>
-          </tr>`,
+          </tr>`;
+        },
       )
       .join("");
 
@@ -302,7 +316,8 @@
     let running = initialCapital;
 
     sorted.forEach((l) => {
-      running += l.outcome === 'win' ? l.amount : -l.amount;
+      const commission = l.commission ?? 0;
+      running += l.outcome === 'win' ? l.amount - commission : -l.amount - commission;
       labels.push(l.date);
       data.push(running);
     });
@@ -492,20 +507,30 @@
       const tbody = document.getElementById("overview-tbody");
       document.getElementById("overview-trade-count").textContent =
         thisWeekLogs.length;
+      function netGainOverview(l) {
+        const commission = l.commission ?? 0;
+        return l.outcome === "win" ? l.amount - commission : -(l.amount + commission);
+      }
       tbody.innerHTML = thisWeekLogs
         .sort((a, b) => new Date(b.date) - new Date(a.date))
         .map(
-          (l) =>
-            `<tr>
+          (l) => {
+            const net = netGainOverview(l);
+            const netCls = net >= 0 ? "green" : "";
+            const netStyle = net < 0 ? ' style="color:var(--red)"' : "";
+            return `<tr>
               <td>${l.date}</td>
               <td><span class="${l.outcome}">${l.outcome.toUpperCase()}</span></td>
               <td>$${f(l.amount)}</td>
+              <td>${l.commission != null && l.commission !== 0 ? '$' + f(l.commission) : "—"}</td>
+              <td class="${netCls}"${netStyle}>${net >= 0 ? "+" : ""}$${f(Math.abs(net))}</td>
               <td>${l.lot != null ? f(l.lot) : "—"}</td>
               <td>${f(l.points, 0)}</td>
               <td>${l.sl != null ? f(l.sl, 0) : "—"}</td>
               <td class="note-cell"${l.note ? ' data-note="1"' : ''}><span class="note-text">${l.note || "—"}</span></td>
               <td><button type="button" class="btn btn-ghost" data-id="${l.id}">${t("delete")}</button></td>
-            </tr>`,
+            </tr>`;
+          },
         )
         .join("");
       tbody.querySelectorAll(".btn-ghost").forEach((btn) => {
