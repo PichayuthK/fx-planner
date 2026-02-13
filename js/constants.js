@@ -7,6 +7,8 @@ ForexPlan.LOT_STEP = 0.01;
 ForexPlan.STORAGE_KEYS = {
   projection: 'forex-plan-projection',
   logs: 'forex-plan-logs',
+  lastLot: 'forex-plan-last-lot',
+  lastCommission: 'forex-plan-last-commission',
 };
 
 // Number formatting with thousand separators

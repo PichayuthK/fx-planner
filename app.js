@@ -125,9 +125,12 @@
       note: (f.note.value || '').trim(),
       commission,
     });
+    // Remember lot & commission for next trade and sync both forms
+    localStorage.setItem(ForexPlan.STORAGE_KEYS.lastLot, lot);
+    localStorage.setItem(ForexPlan.STORAGE_KEYS.lastCommission, commission);
+    document.querySelectorAll('input[name="lot"]').forEach((el) => { el.value = lot; });
+    document.querySelectorAll('input[name="commission"]').forEach((el) => { el.value = commission; });
     f.amount.value = '';
-    f.lot.value = '';
-    if (f.commission) f.commission.value = '0';
     f.note.value = '';
     f.date.value = new Date().toISOString().slice(0, 10);
     // Reset toggle to Win
@@ -344,6 +347,18 @@
   const today = new Date().toISOString().slice(0, 10);
   document.getElementById('logDate').value = today;
   document.getElementById('ov-date').value = today;
+
+  // Restore last-used lot & commission
+  const savedLot = localStorage.getItem(ForexPlan.STORAGE_KEYS.lastLot);
+  const savedCommission = localStorage.getItem(ForexPlan.STORAGE_KEYS.lastCommission);
+  if (savedLot) {
+    document.getElementById('logLot').value = savedLot;
+    document.getElementById('ov-lot').value = savedLot;
+  }
+  if (savedCommission) {
+    document.getElementById('logCommission').value = savedCommission;
+    document.getElementById('ov-commission').value = savedCommission;
+  }
 
   applyLocale();
   ForexPlan._initWeekFilter();
