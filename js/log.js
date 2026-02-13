@@ -43,10 +43,15 @@
 
   ForexPlan.totalFromLogs = totalFromLogs;
 
-  /** Net points: wins add TP points, losses subtract SL points */
+  /** Net points: wins add points, losses subtract points.
+   *  Backward compat: old loss logs have separate `sl` field for SL points. */
   function netPointsFromLogs(logs) {
     return logs.reduce(
-      (sum, l) => sum + (l.outcome === "win" ? (l.points || 0) : -(l.sl || 0)),
+      (sum, l) => {
+        if (l.outcome === "win") return sum + (l.points || 0);
+        // Old loss logs stored TP in `points` and SL separately; prefer `sl` if present
+        return sum - (l.sl != null ? l.sl : (l.points || 0));
+      },
       0,
     );
   }
@@ -132,7 +137,7 @@
 
     if (logs.length === 0) {
       tbody.innerHTML =
-        '<tr><td colspan="10" class="empty">' + ForexPlan.t("noTradesThisPeriod") + '</td></tr>';
+        '<tr><td colspan="9" class="empty">' + ForexPlan.t("noTradesThisPeriod") + '</td></tr>';
       return;
     }
 
@@ -141,6 +146,11 @@
       const commission = l.commission ?? 0;
       const n = l.outcome === "win" ? l.amount - commission : -(l.amount + commission);
       return n;
+    }
+    /** Display points — backward compat: old loss logs stored SL in separate `sl` field */
+    function displayPts(l) {
+      if (l.outcome === "loss" && l.sl != null) return l.sl;
+      return l.points || 0;
     }
     tbody.innerHTML = logs
       .sort((a, b) => new Date(b.date) - new Date(a.date))
@@ -156,8 +166,7 @@
             <td>${l.commission != null && l.commission !== 0 ? '$' + f(l.commission) : "—"}</td>
             <td class="${netCls}"${netStyle}>${net >= 0 ? "+" : ""}$${f(Math.abs(net))}</td>
             <td>${l.lot != null ? f(l.lot) : "—"}</td>
-            <td>${f(l.points, 0)}</td>
-            <td>${l.sl != null ? f(l.sl, 0) : "—"}</td>
+            <td>${f(displayPts(l), 0)}</td>
             <td class="note-cell"${l.note ? ' data-note="1"' : ''}><span class="note-text">${l.note || "—"}</span></td>
             <td><button type="button" class="btn btn-ghost" data-id="${l.id}">${t("delete")}</button></td>
           </tr>`;
@@ -189,28 +198,35 @@
     const winRate =
       logs.length > 0 ? ((wins / logs.length) * 100).toFixed(0) : 0;
 
-    const winLogs = logs.filter((l) => l.outcome === "win" && l.points > 0);
-    const lossLogs = logs.filter((l) => l.outcome === "loss" && l.sl > 0);
+    const winLogs = logs.filter((l) => l.outcome === "win" && (l.points || 0) > 0);
+    const lossLogs = logs.filter((l) => l.outcome === "loss" && ((l.sl != null ? l.sl : l.points) || 0) > 0);
     const avgTp =
       winLogs.length > 0
-        ? winLogs.reduce((s, l) => s + l.points, 0) / winLogs.length
+        ? winLogs.reduce((s, l) => s + (l.points || 0), 0) / winLogs.length
         : 0;
     const avgSl =
       lossLogs.length > 0
-        ? lossLogs.reduce((s, l) => s + l.sl, 0) / lossLogs.length
+        ? lossLogs.reduce((s, l) => s + (l.sl != null ? l.sl : (l.points || 0)), 0) / lossLogs.length
         : 0;
-    const rrRatio = avgSl > 0 ? avgTp / avgSl : 0;
 
     const t = ForexPlan.t;
     const tradeCountStr = logs.length !== 1 ? t("trades") : t("trade");
 
-    let rrHtml = "";
-    if (winLogs.length > 0 && lossLogs.length > 0) {
-      rrHtml = `
+    let avgPtsHtml = "";
+    if (winLogs.length > 0) {
+      avgPtsHtml += `
       <div class="stat">
-        <div class="stat-label">${t("rrRatio")} <span class="info-tip" data-tip="Actual Reward-to-Risk ratio. Avg TP pts (wins) / avg SL pts (losses)."><img src="assets/info.png" alt="info" /></span></div>
-        <div class="stat-value">${f(rrRatio, 1)}</div>
-        <div class="stat-sub">avg ${f(avgTp, 0)} TP / ${f(avgSl, 0)} SL pts</div>
+        <div class="stat-label">${t("avgTpPts")} <span class="info-tip" data-tip="${t("avgTpPtsTip")}"><img src="assets/info.png" alt="info" /></span></div>
+        <div class="stat-value">${f(avgTp, 0)} <small>pts</small></div>
+        <div class="stat-sub">${winLogs.length} ${winLogs.length !== 1 ? t("trades") : t("trade")}</div>
+      </div>`;
+    }
+    if (lossLogs.length > 0) {
+      avgPtsHtml += `
+      <div class="stat">
+        <div class="stat-label">${t("avgSlPts")} <span class="info-tip" data-tip="${t("avgSlPtsTip")}"><img src="assets/info.png" alt="info" /></span></div>
+        <div class="stat-value">${f(avgSl, 0)} <small>pts</small></div>
+        <div class="stat-sub">${lossLogs.length} ${lossLogs.length !== 1 ? t("trades") : t("trade")}</div>
       </div>`;
     }
 
@@ -242,7 +258,7 @@
         <div class="stat-value">${winRate}%</div>
         <div class="stat-sub">${wins}W / ${losses}L</div>
       </div>
-      ${rrHtml}
+      ${avgPtsHtml}
     `;
     el.hidden = false;
   };
@@ -511,6 +527,10 @@
         const commission = l.commission ?? 0;
         return l.outcome === "win" ? l.amount - commission : -(l.amount + commission);
       }
+      function displayPtsOv(l) {
+        if (l.outcome === "loss" && l.sl != null) return l.sl;
+        return l.points || 0;
+      }
       tbody.innerHTML = thisWeekLogs
         .sort((a, b) => new Date(b.date) - new Date(a.date))
         .map(
@@ -525,8 +545,7 @@
               <td>${l.commission != null && l.commission !== 0 ? '$' + f(l.commission) : "—"}</td>
               <td class="${netCls}"${netStyle}>${net >= 0 ? "+" : ""}$${f(Math.abs(net))}</td>
               <td>${l.lot != null ? f(l.lot) : "—"}</td>
-              <td>${f(l.points, 0)}</td>
-              <td>${l.sl != null ? f(l.sl, 0) : "—"}</td>
+              <td>${f(displayPtsOv(l), 0)}</td>
               <td class="note-cell"${l.note ? ' data-note="1"' : ''}><span class="note-text">${l.note || "—"}</span></td>
               <td><button type="button" class="btn btn-ghost" data-id="${l.id}">${t("delete")}</button></td>
             </tr>`;

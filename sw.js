@@ -1,4 +1,4 @@
-const CACHE_NAME = 'forex-plan-v2';
+const CACHE_NAME = 'forex-plan-v4';
 
 const ASSETS = [
   './',

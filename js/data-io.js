@@ -43,7 +43,7 @@
       return;
     }
 
-    const headers = ['Date', 'Result', 'Amount', 'Commission', 'P/L', 'Lot', 'TP Points', 'SL Points', 'Note'];
+    const headers = ['Date', 'Result', 'Amount', 'Commission', 'P/L', 'Lot', 'Points', 'Note'];
     const rows = logs
       .sort((a, b) => new Date(a.date) - new Date(b.date))
       .map((l) => {
@@ -56,8 +56,7 @@
           commission.toFixed(2),
           netGain.toFixed(2),
           l.lot != null ? l.lot.toFixed(2) : '',
-          l.points,
-          l.sl != null ? l.sl : '',
+          l.outcome === 'loss' && l.sl != null ? l.sl : (l.points || 0),
           `"${(l.note || '').replace(/"/g, '""')}"`,
         ].join(',');
       });

@@ -112,11 +112,8 @@
     const f = e.target;
     const outcome = f.outcome.value;
     const amount = Number(f.amount.value);
-    const points = Number(f.points.value);
-    const sl = Number(f.sl.value);
-    const lot = outcome === 'win' && points > 0
-      ? amount / points
-      : sl > 0 ? amount / sl : 0;
+    const lot = Number(f.lot.value);
+    const points = lot > 0 ? Math.round(amount / lot) : 0;
 
     const commission = Number(f.commission?.value) || 0;
     addLog({
@@ -124,14 +121,12 @@
       amount,
       lot: Math.round(lot * 100) / 100,
       points,
-      sl,
       date: f.date.value,
       note: (f.note.value || '').trim(),
       commission,
     });
     f.amount.value = '';
-    f.points.value = '';
-    f.sl.value = '';
+    f.lot.value = '';
     if (f.commission) f.commission.value = '0';
     f.note.value = '';
     f.date.value = new Date().toISOString().slice(0, 10);

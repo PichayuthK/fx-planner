@@ -120,17 +120,9 @@
                 </div>
               </div>
               <div class="form-group">
-                <label for="ov-points" data-i18n="tpPts">TP pts</label>
+                <label for="ov-lot"><span data-i18n="lot">Lot</span></label>
                 <div class="input-wrap">
-                  <input type="number" id="ov-points" name="points" min="0" step="1" required />
-                  <span class="input-suffix">pts</span>
-                </div>
-              </div>
-              <div class="form-group">
-                <label for="ov-sl" data-i18n="slPts">SL pts</label>
-                <div class="input-wrap">
-                  <input type="number" id="ov-sl" name="sl" min="0" step="1" required />
-                  <span class="input-suffix">pts</span>
+                  <input type="number" id="ov-lot" name="lot" min="0.01" step="0.01" required />
                 </div>
               </div>
             </div>
@@ -167,7 +159,7 @@
           <div class="table-wrap">
             <table>
               <thead>
-                <tr><th>Date</th><th>Result</th><th>Amount</th><th data-i18n="commission">Commission</th><th data-i18n="netGain">Net Gain</th><th>Lot</th><th>Points</th><th>SL</th><th>Note</th><th></th></tr>
+                <tr><th>Date</th><th>Result</th><th>Amount</th><th data-i18n="commission">Commission</th><th data-i18n="netGain">P/L</th><th>Lot</th><th data-i18n="tablePoints">Points</th><th>Note</th><th></th></tr>
               </thead>
               <tbody id="overview-tbody"></tbody>
             </table>
@@ -337,17 +329,9 @@
                 </div>
               </div>
               <div class="form-group">
-                <label for="points"><span data-i18n="tpPts">TP pts</span> <span class="info-tip" data-tip="Take profit points of this trade."><img src="assets/info.png" alt="info" /></span></label>
+                <label for="logLot"><span data-i18n="lot">Lot</span> <span class="info-tip" data-tip="Lot size used for this trade. Points are calculated as amount ÷ lot."><img src="assets/info.png" alt="info" /></span></label>
                 <div class="input-wrap">
-                  <input type="number" id="points" name="points" min="0" step="1" required />
-                  <span class="input-suffix">pts</span>
-                </div>
-              </div>
-              <div class="form-group">
-                <label for="logSl"><span data-i18n="slPts">SL pts</span> <span class="info-tip" data-tip="Stop Loss points of this trade."><img src="assets/info.png" alt="info" /></span></label>
-                <div class="input-wrap">
-                  <input type="number" id="logSl" name="sl" min="0" step="1" required />
-                  <span class="input-suffix">pts</span>
+                  <input type="number" id="logLot" name="lot" min="0.01" step="0.01" required />
                 </div>
               </div>
             </div>
@@ -398,7 +382,7 @@
           <div class="table-wrap">
             <table>
               <thead>
-                <tr><th>Date</th><th>Result</th><th>Amount</th><th data-i18n="commission">Commission</th><th data-i18n="netGain">Net Gain</th><th>Lot</th><th>Points</th><th>SL</th><th>Note</th><th></th></tr>
+                <tr><th>Date</th><th>Result</th><th>Amount</th><th data-i18n="commission">Commission</th><th data-i18n="netGain">P/L</th><th>Lot</th><th data-i18n="tablePoints">Points</th><th>Note</th><th></th></tr>
               </thead>
               <tbody id="log-tbody"></tbody>
             </table>
