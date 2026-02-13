@@ -1,4 +1,4 @@
-const CACHE_NAME = 'forex-plan-v1';
+const CACHE_NAME = 'forex-plan-v2';
 
 const ASSETS = [
   './',
@@ -16,6 +16,7 @@ const ASSETS = [
   './assets/setting.png',
   './assets/refresh-page-option.png',
   './assets/trophy.png',
+  './assets/app-icon.png',
   'https://cdn.jsdelivr.net/npm/chart.js@4/dist/chart.umd.min.js',
   'https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap'
 ];
