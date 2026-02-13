@@ -153,7 +153,17 @@
       return l.points || 0;
     }
     tbody.innerHTML = logs
-      .sort((a, b) => new Date(b.date) - new Date(a.date))
+      .sort((a, b) => {
+        const da = new Date(a.date);
+        const db = new Date(b.date);
+        const diff = db - da;
+        if (diff !== 0) return diff;
+        // Same date: sort by id (timestamp string) so newest comes first
+        const ida = Number(a.id);
+        const idb = Number(b.id);
+        if (!Number.isNaN(idb - ida) && idb !== ida) return idb - ida;
+        return 0;
+      })
       .map(
         (l) => {
           const net = netGain(l);
